@@ -1,0 +1,83 @@
+@import "tailwindcss";
+
+@theme {
+  /* Warna Gold */
+  --color-gold-50: #fdf8ef;
+  --color-gold-100: #f8ebce;
+  --color-gold-200: #f0d49a;
+  --color-gold-300: #e8bc64;
+  --color-gold-400: #C9A96E;
+  --color-gold-500: #b8860b;
+  --color-gold-600: #9a6f0a;
+  --color-gold-700: #7c5808;
+  --color-gold-800: #5e4206;
+  --color-gold-900: #402c04;
+
+  /* Warna Dark */
+  --color-dark-50: #f5f5f6;
+  --color-dark-100: #e5e5e7;
+  --color-dark-200: #ceced2;
+  --color-dark-300: #b1b1b8;
+  --color-dark-400: #8e8e99;
+  --color-dark-500: #6d6d7c;
+  --color-dark-600: #575767;
+  --color-dark-700: #484857;
+  --color-dark-800: #3d3d4b;
+  --color-dark-900: #1a1a2e;
+  --color-dark: #1a1a2e;
+
+  /* Warna Cream */
+  --color-cream: #f8f6f3;
+
+  /* Font Family - Ngambil dari variabel layout.tsx */
+  --font-serif: var(--font-playfair), Georgia, serif;
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+}
+
+/* Base styling global */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-cream);
+  color: var(--color-dark-900);
+}
+
+/* Custom utility biar gampang */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  .gold-divider {
+    @apply w-20 h-px bg-gold-400 mx-auto;
+  }
+
+  /* Animasi fade in */
+  .animate-fade-in {
+    animation: fadeIn 1s ease-out forwards;
+  }
+
+  .animate-fade-in-up {
+    animation: fadeInUp 1s ease-out forwards;
+  }
+
+  .animate-delay-200 {
+    animation-delay: 0.2s;
+  }
+
+  .animate-delay-400 {
+    animation-delay: 0.4s;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
