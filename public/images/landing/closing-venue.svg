@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" role="img" aria-labelledby="title">
+  <title id="title">Grand wedding venue illustration</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#8a6f62"/><stop offset=".48" stop-color="#d9c4b3"/><stop offset="1" stop-color="#4c3c35"/></linearGradient>
+    <radialGradient id="glow"><stop stop-color="#fff2cf" stop-opacity=".88"/><stop offset="1" stop-color="#fff2cf" stop-opacity="0"/></radialGradient>
+    <filter id="shadow"><feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#2b211d" flood-opacity=".3"/></filter>
+  </defs>
+  <rect width="1600" height="1000" fill="url(#bg)"/>
+  <ellipse cx="1000" cy="240" rx="500" ry="390" fill="url(#glow)"/>
+  <path d="M0 760c290-130 520-40 800-80s500-120 800-10v330H0z" fill="#342a26" opacity=".52"/>
+  <g stroke="#6f574b" stroke-width="25" fill="none" stroke-linecap="round" filter="url(#shadow)">
+    <path d="M720 730V420c0-210 130-330 280-330s280 120 280 330v310"/>
+    <path d="M800 730V450c0-145 90-230 200-230s200 85 200 230v280" opacity=".55"/>
+  </g>
+  <g fill="#75836e"><ellipse cx="735" cy="300" rx="120" ry="45" transform="rotate(-18 735 300)"/><ellipse cx="1260" cy="315" rx="125" ry="45" transform="rotate(20 1260 315)"/></g>
+  <g fill="#daa89e"><circle cx="760" cy="350" r="50"/><circle cx="1235" cy="360" r="52"/><circle cx="700" cy="420" r="34"/><circle cx="1300" cy="430" r="36"/></g>
+  <g filter="url(#shadow)">
+    <rect x="540" y="740" width="920" height="80" rx="40" fill="#eee2d6"/>
+    <rect x="610" y="700" width="780" height="70" rx="35" fill="#fff8ee"/>
+    <g fill="#8d6e5e"><circle cx="760" cy="735" r="24"/><circle cx="1000" cy="735" r="24"/><circle cx="1240" cy="735" r="24"/></g>
+  </g>
+  <g fill="#f4d29a"><circle cx="550" cy="200" r="10"/><circle cx="1450" cy="210" r="8"/><circle cx="1410" cy="150" r="5"/><circle cx="470" cy="290" r="5"/></g>
+</svg>
