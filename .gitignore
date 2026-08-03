@@ -1,43 +1,26 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
-/node_modules
-/.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
-
-# testing
-/coverage
-
-# next.js
-/.next/
-/out/
-
-# production
-/build
-
-# misc
+node_modules/
+.next/
+out/
+coverage/
+*.log
+.env
+.env.local
+.env.*.local
+!.env.example
 .DS_Store
-*.pem
+.vercel/
+firebase-debug.log
+firestore-debug.log
 
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
+# Migration exports and database backups may contain personal data
+migration/legacy-export*.json
+*.sql
+*.dump
+*.backup
 
-# env files (can opt-in for committing if needed)
-.env*
+# Service-account files must never be committed
+service-account*.json
+firebase-service-account*.json
 
-# vercel
-.vercel
-
-# typescript
+# TypeScript incremental build cache
 *.tsbuildinfo
-next-env.d.ts
-
-/app/generated/prisma

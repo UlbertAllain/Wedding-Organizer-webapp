@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1600" role="img" aria-labelledby="title desc">
+  <title id="title">Elegant garden wedding illustration</title>
+  <desc id="desc">An editorial wedding arch, floral arrangements, and a faceless couple in warm neutral tones.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#d7c4b4"/><stop offset=".48" stop-color="#f0e6dc"/><stop offset="1" stop-color="#9a796a"/></linearGradient>
+    <linearGradient id="floor" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#c9b4a3" stop-opacity=".18"/><stop offset="1" stop-color="#6e5145" stop-opacity=".68"/></linearGradient>
+    <linearGradient id="dress" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fffdf8"/><stop offset="1" stop-color="#d9cec4"/></linearGradient>
+    <filter id="blur"><feGaussianBlur stdDeviation="18"/></filter>
+    <filter id="shadow"><feDropShadow dx="0" dy="24" stdDeviation="26" flood-color="#3a2720" flood-opacity=".22"/></filter>
+  </defs>
+  <rect width="1200" height="1600" fill="url(#bg)"/>
+  <circle cx="1070" cy="170" r="260" fill="#f6ead8" opacity=".4" filter="url(#blur)"/>
+  <circle cx="170" cy="360" r="240" fill="#8c9a83" opacity=".24" filter="url(#blur)"/>
+  <path d="M0 1140C210 1010 390 1100 600 1050s390-100 600 40v510H0z" fill="url(#floor)"/>
+  <g opacity=".38" fill="#53604f">
+    <path d="M30 980c65-180 105-310 92-520 108 150 120 355 45 550z"/>
+    <path d="M1160 970c-75-180-110-330-80-515-122 150-140 350-60 545z"/>
+  </g>
+  <g stroke="#6e584e" stroke-width="24" fill="none" stroke-linecap="round" filter="url(#shadow)">
+    <path d="M275 980V640c0-290 180-465 325-465s325 175 325 465v340"/>
+    <path d="M350 980V665c0-225 140-360 250-360s250 135 250 360v315" opacity=".55"/>
+  </g>
+  <g fill="#7e8d76">
+    <ellipse cx="330" cy="440" rx="105" ry="45" transform="rotate(-28 330 440)"/>
+    <ellipse cx="275" cy="555" rx="95" ry="38" transform="rotate(18 275 555)"/>
+    <ellipse cx="830" cy="430" rx="110" ry="42" transform="rotate(26 830 430)"/>
+    <ellipse cx="900" cy="565" rx="96" ry="38" transform="rotate(-18 900 565)"/>
+  </g>
+  <g fill="#d9a8a0">
+    <circle cx="315" cy="505" r="46"/><circle cx="360" cy="465" r="36"/><circle cx="275" cy="600" r="42"/>
+    <circle cx="850" cy="485" r="45"/><circle cx="895" cy="530" r="36"/><circle cx="920" cy="620" r="43"/>
+  </g>
+  <g fill="#f0d3ad">
+    <circle cx="280" cy="475" r="27"/><circle cx="340" cy="600" r="24"/><circle cx="875" cy="420" r="26"/><circle cx="845" cy="610" r="24"/>
+  </g>
+  <g filter="url(#shadow)">
+    <ellipse cx="600" cy="1220" rx="250" ry="60" fill="#4b342c" opacity=".18"/>
+    <circle cx="535" cy="770" r="56" fill="#b9816e"/>
+    <path d="M505 830c-25 80-45 260-58 455h190c-8-160-22-350-50-455z" fill="url(#dress)"/>
+    <path d="M555 880c70 95 115 230 142 405H410c30-175 76-315 145-405z" fill="url(#dress)"/>
+    <circle cx="675" cy="750" r="55" fill="#9f6b58"/>
+    <path d="M620 815h115l45 395H590z" fill="#332823"/>
+    <path d="M632 815h90l-28 170h-36z" fill="#ede2d8"/>
+    <path d="M590 1000c68-34 134-30 196 0" stroke="#b9816e" stroke-width="18" stroke-linecap="round"/>
+  </g>
+  <g fill="#fff" opacity=".66">
+    <circle cx="175" cy="220" r="5"/><circle cx="230" cy="175" r="4"/><circle cx="1000" cy="320" r="5"/><circle cx="1035" cy="270" r="3"/>
+  </g>
+  <rect x="45" y="45" width="1110" height="1510" rx="500" fill="none" stroke="#fff" stroke-opacity=".22" stroke-width="2"/>
+</svg>

@@ -1,36 +1,79 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Wedding Organizer — Firestore Refactor
 
-## Getting Started
+Refactor bersih untuk sistem Wedding Organizer berbasis Next.js App Router, Firebase Authentication, Firestore, Cloudinary, dan Midtrans opsional.
 
-First, run the development server:
+## Tujuan arsitektur
+
+- Satu dashboard berbasis role, tanpa duplikasi pohon halaman admin dan user.
+- Firebase Authentication untuk identitas; session cookie HttpOnly untuk autentikasi server.
+- Firestore sebagai sumber data tunggal.
+- Cloudinary signed upload untuk seluruh gambar.
+- Route handler tipis: validasi → otorisasi → repository/service → respons.
+- Booking capacity menggunakan transaksi Firestore agar aman dari race condition.
+- Midtrans webhook diverifikasi dengan SHA-512 dan `timingSafeEqual`.
+- Tidak ada akses Firestore langsung dari browser; semua data bisnis melalui API server.
+
+## Stack
+
+- Next.js 16 + React 19 + TypeScript strict
+- Firebase Auth + Firestore Admin SDK
+- Cloudinary
+- Midtrans Snap (opsional)
+- Zod
+- ESLint + GitHub Actions
+
+## Modul
+
+- Autentikasi dan role `ADMIN` / `USER`
+- Paket
+- Vendor
+- Booking dan kuota harian
+- Timeline acara per booking
+- Pembayaran Midtrans atau bukti transfer manual
+- Galeri umum / per-booking
+- Chat per-booking
+- Profil pengguna
+
+## Mulai cepat
 
 ```bash
+cp .env.example .env.local
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Baca dokumen berikut sebelum menjalankan produksi:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- [`SETUP.md`](SETUP.md)
+- [`AUDIT_REPORT.md`](AUDIT_REPORT.md)
+- [`MIGRATION_FIRESTORE.md`](MIGRATION_FIRESTORE.md)
+- [`GITHUB_PUSH.md`](GITHUB_PUSH.md)
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
+- [`docs/VALIDATION.md`](docs/VALIDATION.md)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Quality gate
 
-## Learn More
+```bash
+npm run typecheck
+npm run lint
+npm run build
+# atau semuanya:
+npm run check
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Perintah operasional
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run seed
+npm run admin:set -- admin@example.com
+npm run migrate:media -- migration/legacy-export.json /path/to/old/public
+npm run migrate:legacy -- migration/legacy-export-cloudinary.json
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+> Jangan commit `.env.local`, service-account JSON, private key, atau kredensial Midtrans/Cloudinary.
 
-## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Antarmuka
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Versi ini menggunakan editorial wedding design system untuk landing, autentikasi,
+dan dashboard. Detail perubahan UI terdapat di [`docs/UI_REDESIGN.md`](docs/UI_REDESIGN.md).

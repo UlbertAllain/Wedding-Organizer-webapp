@@ -1,0 +1,88 @@
+import { FieldValue } from "firebase-admin/firestore";
+
+import type { PackageInput } from "@/features/packages/schema";
+import { AppError } from "@/lib/errors";
+import { getAdminDb } from "@/lib/firebase/admin";
+import { documentToRecord } from "@/lib/firebase/converters";
+import type { PackageRecord } from "@/types/domain";
+
+function collection() {
+  return getAdminDb().collection("packages");
+}
+
+function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+function normalizePackage(input: Partial<PackageInput>) {
+  return Object.fromEntries(
+    Object.entries({
+      ...input,
+      ...(Object.hasOwn(input, "imageUrl") ? { imageUrl: input.imageUrl ?? null } : {}),
+      ...(Object.hasOwn(input, "imagePublicId")
+        ? { imagePublicId: input.imagePublicId ?? null }
+        : {}),
+    }).filter(([, value]) => value !== undefined),
+  );
+}
+
+export async function listPackages(options?: { activeOnly?: boolean }) {
+  let query = collection().orderBy("createdAt", "desc").limit(100);
+  if (options?.activeOnly) query = query.where("isActive", "==", true);
+
+  const snapshot = await query.get();
+  return snapshot.docs.map((doc) => documentToRecord<PackageRecord>(doc));
+}
+
+export async function getPackage(id: string) {
+  const snapshot = await collection().doc(id).get();
+  if (!snapshot.exists) return null;
+  return documentToRecord<PackageRecord>(snapshot);
+}
+
+export async function createPackage(input: PackageInput) {
+  const now = FieldValue.serverTimestamp();
+  const ref = collection().doc();
+
+  await ref.set({
+    ...normalizePackage(input),
+    imageUrl: input.imageUrl ?? null,
+    imagePublicId: input.imagePublicId ?? null,
+    slug: slugify(input.name),
+    createdAt: now,
+    updatedAt: now,
+  });
+
+  return ref.id;
+}
+
+export async function updatePackage(id: string, input: Partial<PackageInput>) {
+  await collection()
+    .doc(id)
+    .update({
+      ...normalizePackage(input),
+      ...(input.name ? { slug: slugify(input.name) } : {}),
+      updatedAt: FieldValue.serverTimestamp(),
+    });
+}
+
+export async function deletePackage(id: string) {
+  const booking = await getAdminDb()
+    .collection("bookings")
+    .where("packageId", "==", id)
+    .limit(1)
+    .get();
+
+  if (!booking.empty) {
+    throw new AppError(
+      "Package is already referenced by a booking. Deactivate it instead.",
+      409,
+    );
+  }
+
+  await collection().doc(id).delete();
+}
