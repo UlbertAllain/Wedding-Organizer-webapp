@@ -40,14 +40,28 @@ export default function ChatManager({ user }: { user: UserProfile }) {
   }, [bookingId]);
 
   useEffect(() => {
-    loadMessages().catch((caught) => setError(caught.message));
     if (!bookingId) return;
+
+    let cancelled = false;
+
+    apiRequest<ChatMessageRecord[]>(`/api/chat?bookingId=${bookingId}`)
+      .then((data) => {
+        if (!cancelled) setMessages(data);
+      })
+      .catch((caught: unknown) => {
+        if (!cancelled) {
+          setError(caught instanceof Error ? caught.message : "Load failed");
+        }
+      });
 
     const timer = window.setInterval(() => {
       loadMessages().catch(() => undefined);
     }, POLLING_INTERVAL_MS);
 
-    return () => window.clearInterval(timer);
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+    };
   }, [bookingId, loadMessages]);
 
   async function send(event: FormEvent<HTMLFormElement>) {

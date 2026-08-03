@@ -28,8 +28,28 @@ export default function PaymentManager({ role }: { role: UserRole }) {
   }, []);
 
   useEffect(() => {
-    load().catch((error) => setMessage(error.message));
-  }, [load]);
+    let cancelled = false;
+
+    Promise.all([
+      apiRequest<PaymentRecord[]>("/api/payments"),
+      apiRequest<BookingRecord[]>("/api/bookings"),
+    ])
+      .then(([paymentData, bookingData]) => {
+        if (cancelled) return;
+
+        setPayments(paymentData);
+        setBookings(bookingData);
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) {
+          setMessage(error instanceof Error ? error.message : "Load failed");
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   async function payMidtrans(bookingId: string) {
     setBusyId(bookingId);

@@ -24,8 +24,28 @@ export default function GalleryManager({ role }: { role: UserRole }) {
   }, []);
 
   useEffect(() => {
-    load().catch((error) => setMessage(error.message));
-  }, [load]);
+    let cancelled = false;
+
+    Promise.all([
+      apiRequest<GalleryRecord[]>("/api/gallery"),
+      apiRequest<BookingRecord[]>("/api/bookings"),
+    ])
+      .then(([galleryData, bookingData]) => {
+        if (cancelled) return;
+
+        setItems(galleryData);
+        setBookings(bookingData);
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) {
+          setMessage(error instanceof Error ? error.message : "Load failed");
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

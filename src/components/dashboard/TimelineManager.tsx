@@ -35,8 +35,24 @@ export default function TimelineManager({ role }: { role: UserRole }) {
   }, [bookingId]);
 
   useEffect(() => {
-    load().catch((error) => setMessage(error.message));
-  }, [load]);
+    if (!bookingId) return;
+
+    let cancelled = false;
+
+    apiRequest<TimelineRecord[]>(`/api/timeline?bookingId=${bookingId}`)
+      .then((data) => {
+        if (!cancelled) setItems(data);
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) {
+          setMessage(error instanceof Error ? error.message : "Load failed");
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [bookingId]);
 
   async function create(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

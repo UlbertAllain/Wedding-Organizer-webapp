@@ -43,6 +43,7 @@ export default function DashboardOverview({ user }: DashboardOverviewProps) {
   const [payments, setPayments] = useState<PaymentRecord[]>([]);
   const [gallery, setGallery] = useState<GalleryRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [initialNow] = useState(() => Date.now());
 
   useEffect(() => {
     Promise.allSettled([
@@ -57,8 +58,12 @@ export default function DashboardOverview({ user }: DashboardOverviewProps) {
     });
   }, []);
 
-  const activeBookings = bookings.filter(
-    (item) => !["COMPLETED", "CANCELLED", "REJECTED"].includes(item.status),
+  const activeBookings = useMemo(
+    () =>
+      bookings.filter(
+        (item) => !["COMPLETED", "CANCELLED", "REJECTED"].includes(item.status),
+      ),
+    [bookings],
   );
   const paidValue = payments
     .filter((item) => item.status === "PAID")
@@ -67,13 +72,13 @@ export default function DashboardOverview({ user }: DashboardOverviewProps) {
   const nextBooking = useMemo(
     () =>
       [...activeBookings]
-        .filter((item) => new Date(item.weddingDate).getTime() >= Date.now())
+        .filter((item) => new Date(item.weddingDate).getTime() >= initialNow)
         .sort(
           (first, second) =>
             new Date(first.weddingDate).getTime() -
             new Date(second.weddingDate).getTime(),
         )[0],
-    [activeBookings],
+    [activeBookings, initialNow],
   );
   const progress = nextBooking ? statusProgress[nextBooking.status] : 0;
 

@@ -33,8 +33,30 @@ export default function BookingManager({ role }: { role: UserRole }) {
   }, []);
 
   useEffect(() => {
-    load().catch((error) => setMessage(error.message));
-  }, [load]);
+    let cancelled = false;
+
+    Promise.all([
+      apiRequest<BookingRecord[]>("/api/bookings"),
+      apiRequest<PackageRecord[]>("/api/packages?active=true"),
+      apiRequest<VendorRecord[]>("/api/vendors?active=true"),
+    ])
+      .then(([bookingData, packageData, vendorData]) => {
+        if (cancelled) return;
+
+        setBookings(bookingData);
+        setPackages(packageData);
+        setVendors(vendorData);
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) {
+          setMessage(error instanceof Error ? error.message : "Load failed");
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   async function create(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
