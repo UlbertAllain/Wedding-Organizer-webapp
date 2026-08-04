@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useRef, useState } from "react";
@@ -9,20 +10,17 @@ import {
   signInWithEmailAndPassword,
   updateProfile,
 } from "firebase/auth";
-import {
-  ArrowLeft,
-  ArrowRight,
-  CalendarCheck2,
-  Check,
-  Heart,
-  ShieldCheck,
-  Sparkles,
-} from "lucide-react";
 
 import { apiRequest } from "@/lib/api-client";
 import { firebaseAuth } from "@/lib/firebase/client";
 
 type AuthMode = "login" | "register";
+
+const benefits = [
+  "Pantau detail acara dari satu tempat",
+  "Simpan keputusan dan percakapan penting",
+  "Lihat timeline, tagihan, dan dokumentasi",
+];
 
 export default function AuthForm({ mode }: { mode: AuthMode }) {
   const router = useRouter();
@@ -66,7 +64,7 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
       router.refresh();
     } catch (error) {
       setIsError(true);
-      setMessage(error instanceof Error ? error.message : "Authentication failed");
+      setMessage(error instanceof Error ? error.message : "Autentikasi gagal.");
     } finally {
       setBusy(false);
     }
@@ -76,162 +74,141 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
     const email = emailRef.current?.value.trim();
     if (!email) {
       setIsError(true);
-      setMessage("Isi email terlebih dahulu.");
+      setMessage("Isi alamat email terlebih dahulu.");
       return;
     }
 
     try {
       await sendPasswordResetEmail(firebaseAuth, email);
       setIsError(false);
-      setMessage("Tautan reset kata sandi telah dikirim.");
+      setMessage("Tautan pengaturan ulang kata sandi telah dikirim.");
     } catch (error) {
       setIsError(true);
-      setMessage(error instanceof Error ? error.message : "Reset failed");
+      setMessage(error instanceof Error ? error.message : "Pengiriman gagal.");
     }
   }
 
   return (
-    <div className="auth-layout">
-      <section className="auth-showcase">
+    <main className="auth-layout">
+      <section className="auth-visual">
+        <div className="auth-visual-photo" />
+        <div className="auth-visual-overlay" />
         <Link href="/" className="auth-back-link">
-          <ArrowLeft size={16} /> Kembali ke beranda
+          <ArrowLeft size={16} aria-hidden="true" />
+          Beranda
         </Link>
 
-        <div className="auth-showcase-copy">
-          <span className="auth-ornament">
-            <Heart size={18} />
-          </span>
-          <span className="eyebrow light">Wedding operations suite</span>
-          <h2>Rencana yang indah dimulai dari sistem yang tenang.</h2>
-          <p>
-            Booking, vendor, timeline, pembayaran, galeri, dan komunikasi berada
-            dalam satu ruang kerja yang sama.
-          </p>
-          <div className="auth-benefit-list">
-            <div>
-              <CalendarCheck2 size={18} />
-              <span>Jadwal dan progress acara selalu terbaca</span>
-            </div>
-            <div>
-              <ShieldCheck size={18} />
-              <span>Akses admin dan klien terpisah secara aman</span>
-            </div>
-            <div>
-              <Sparkles size={18} />
-              <span>Media dan detail pernikahan tersimpan terpusat</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="auth-showcase-footer">
-          <span>PLAN</span>
-          <i />
-          <span>COLLABORATE</span>
-          <i />
-          <span>CELEBRATE</span>
+        <div className="auth-visual-copy">
+          <p className="section-label section-label-light">Wedding workspace</p>
+          <h2>Satu tempat untuk menjaga setiap detail tetap terhubung.</h2>
+          <ol>
+            {benefits.map((benefit, index) => (
+              <li key={benefit}>
+                <span>{String(index + 1).padStart(2, "0")}</span>
+                {benefit}
+              </li>
+            ))}
+          </ol>
         </div>
       </section>
 
-      <section className="auth-form-side">
-        <form className="auth-card" onSubmit={submit}>
-          <div className="auth-card-heading">
-            <span className="auth-mini-mark">WO</span>
-            <div>
-              <span className="eyebrow">
-                {mode === "login" ? "Welcome back" : "Create workspace access"}
-              </span>
-              <h1>{mode === "login" ? "Masuk ke akun Anda" : "Buat akun klien"}</h1>
+      <section className="auth-form-panel">
+        <div className="auth-form-wrap">
+          <Link className="auth-wordmark" href="/">
+            Wedding Organizer
+          </Link>
+
+          <form className="auth-card" onSubmit={submit}>
+            <header>
+              <p className="section-label">
+                {mode === "login" ? "Akses akun" : "Akun klien baru"}
+              </p>
+              <h1>{mode === "login" ? "Selamat datang kembali." : "Mulai rencana kalian."}</h1>
               <p>
                 {mode === "login"
-                  ? "Lanjutkan pengelolaan acara dari dashboard."
-                  : "Mulai susun rencana pernikahan dalam satu ruang kerja."}
+                  ? "Masuk untuk melanjutkan pengelolaan acara."
+                  : "Buat akun untuk mulai berkonsultasi dan menyusun detail acara."}
               </p>
-            </div>
-          </div>
+            </header>
 
-          {mode === "register" && (
-            <div className="auth-two-column">
-              <label>
-                <span>Nama lengkap</span>
-                <input name="name" minLength={2} placeholder="Nama Anda" required />
-              </label>
-              <label>
-                <span>Nomor telepon</span>
-                <input
-                  name="phone"
-                  type="tel"
-                  minLength={8}
-                  placeholder="08xxxxxxxxxx"
-                  required
-                />
-              </label>
-            </div>
-          )}
-
-          <label>
-            <span>Alamat email</span>
-            <input
-              ref={emailRef}
-              name="email"
-              type="email"
-              autoComplete="email"
-              placeholder="nama@email.com"
-              required
-            />
-          </label>
-          <label>
-            <span>Kata sandi</span>
-            <input
-              name="password"
-              type="password"
-              autoComplete={mode === "login" ? "current-password" : "new-password"}
-              minLength={8}
-              placeholder="Minimal 8 karakter"
-              required
-            />
-          </label>
-
-          {message && (
-            <p className={`alert${isError ? " error" : ""}`} role="status">
-              {message}
-            </p>
-          )}
-
-          <button className="button primary full auth-submit" disabled={busy}>
-            {busy ? "Memproses..." : mode === "login" ? "Masuk ke dashboard" : "Buat akun"}
-            {!busy && <ArrowRight size={17} />}
-          </button>
-
-          {mode === "login" && (
-            <button type="button" className="auth-reset" onClick={resetPassword}>
-              Lupa kata sandi?
-            </button>
-          )}
-
-          <div className="auth-divider">
-            <span />
-            <small>AKSES AMAN FIREBASE</small>
-            <span />
-          </div>
-
-          <p className="auth-switch">
-            {mode === "login" ? (
-              <>
-                Belum memiliki akun? <Link href="/register">Daftar sekarang</Link>
-              </>
-            ) : (
-              <>
-                Sudah memiliki akun? <Link href="/login">Masuk di sini</Link>
-              </>
+            {mode === "register" && (
+              <div className="auth-field-grid">
+                <label>
+                  <span>Nama lengkap</span>
+                  <input name="name" minLength={2} placeholder="Nama Anda" required />
+                </label>
+                <label>
+                  <span>Nomor telepon</span>
+                  <input
+                    name="phone"
+                    type="tel"
+                    minLength={8}
+                    placeholder="08xxxxxxxxxx"
+                    required
+                  />
+                </label>
+              </div>
             )}
-          </p>
 
-          <div className="auth-secure-note">
-            <Check size={15} />
-            <span>Session tersimpan melalui cookie HttpOnly yang aman.</span>
-          </div>
-        </form>
+            <label>
+              <span>Alamat email</span>
+              <input
+                ref={emailRef}
+                name="email"
+                type="email"
+                autoComplete="email"
+                placeholder="nama@email.com"
+                required
+              />
+            </label>
+
+            <label>
+              <span>Kata sandi</span>
+              <input
+                name="password"
+                type="password"
+                autoComplete={mode === "login" ? "current-password" : "new-password"}
+                minLength={8}
+                placeholder="Minimal 8 karakter"
+                required
+              />
+            </label>
+
+            {message && (
+              <p className={`alert${isError ? " error" : ""}`} role="status">
+                {message}
+              </p>
+            )}
+
+            <button className="button button-dark button-large button-full" disabled={busy}>
+              {busy ? "Memproses..." : mode === "login" ? "Masuk" : "Buat akun"}
+              {!busy && <ArrowRight size={17} aria-hidden="true" />}
+            </button>
+
+            {mode === "login" && (
+              <button type="button" className="auth-reset" onClick={resetPassword}>
+                Lupa kata sandi?
+              </button>
+            )}
+
+            <p className="auth-switch">
+              {mode === "login" ? (
+                <>
+                  Belum memiliki akun? <Link href="/register">Daftar</Link>
+                </>
+              ) : (
+                <>
+                  Sudah memiliki akun? <Link href="/login">Masuk</Link>
+                </>
+              )}
+            </p>
+          </form>
+
+          <p className="auth-privacy-note">
+            Data acara hanya dapat diakses oleh Anda dan tim organizer yang berwenang.
+          </p>
+        </div>
       </section>
-    </div>
+    </main>
   );
 }

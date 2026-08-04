@@ -4,17 +4,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
-  CalendarCheck,
-  ChevronRight,
+  CalendarDays,
   Clock3,
   CreditCard,
   Images,
-  LayoutDashboard,
+  LayoutGrid,
   Menu,
   MessageSquare,
   Package,
-  PanelLeftClose,
-  Sparkles,
   Store,
   UserRound,
   X,
@@ -32,128 +29,116 @@ interface DashboardShellProps {
 interface NavigationItem {
   href: string;
   label: string;
-  description: string;
   icon: LucideIcon;
 }
 
-const pageTitles: Record<string, string> = {
-  "/dashboard": "Overview",
-  "/dashboard/bookings": "Booking",
-  "/dashboard/timeline": "Timeline",
-  "/dashboard/packages": "Paket",
-  "/dashboard/vendors": "Vendor",
-  "/dashboard/payments": "Pembayaran",
-  "/dashboard/gallery": "Galeri",
-  "/dashboard/chat": "Chat",
-  "/dashboard/profile": "Profil",
+const pageTitles: Record<string, { title: string; note: string }> = {
+  "/dashboard": {
+    title: "Ringkasan",
+    note: "Prioritas, acara, dan aktivitas terbaru.",
+  },
+  "/dashboard/bookings": {
+    title: "Booking",
+    note: "Jadwal, pasangan, paket, dan status acara.",
+  },
+  "/dashboard/timeline": {
+    title: "Timeline",
+    note: "Agenda persiapan dan pelaksanaan per acara.",
+  },
+  "/dashboard/packages": {
+    title: "Paket",
+    note: "Kelola cakupan layanan yang ditawarkan.",
+  },
+  "/dashboard/vendors": {
+    title: "Vendor",
+    note: "Daftar partner dan biaya layanan.",
+  },
+  "/dashboard/payments": {
+    title: "Pembayaran",
+    note: "Tagihan, bukti transfer, dan status pelunasan.",
+  },
+  "/dashboard/gallery": {
+    title: "Galeri",
+    note: "Dokumentasi umum dan koleksi setiap acara.",
+  },
+  "/dashboard/chat": {
+    title: "Percakapan",
+    note: "Komunikasi yang terhubung langsung ke booking.",
+  },
+  "/dashboard/profile": {
+    title: "Profil",
+    note: "Identitas dan informasi kontak akun.",
+  },
 };
+
+const primaryLinks: NavigationItem[] = [
+  { href: "/dashboard", label: "Ringkasan", icon: LayoutGrid },
+  { href: "/dashboard/bookings", label: "Booking", icon: CalendarDays },
+  { href: "/dashboard/timeline", label: "Timeline", icon: Clock3 },
+  { href: "/dashboard/payments", label: "Pembayaran", icon: CreditCard },
+  { href: "/dashboard/gallery", label: "Galeri", icon: Images },
+  { href: "/dashboard/chat", label: "Percakapan", icon: MessageSquare },
+];
+
+const adminLinks: NavigationItem[] = [
+  { href: "/dashboard/packages", label: "Paket", icon: Package },
+  { href: "/dashboard/vendors", label: "Vendor", icon: Store },
+];
 
 export default function DashboardShell({ user, children }: DashboardShellProps) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const adminLinks: NavigationItem[] = [
-    {
-      href: "/dashboard/packages",
-      label: "Paket",
-      description: "Katalog layanan",
-      icon: Package,
-    },
-    {
-      href: "/dashboard/vendors",
-      label: "Vendor",
-      description: "Partner acara",
-      icon: Store,
-    },
-  ];
-  const links: NavigationItem[] = [
-    {
-      href: "/dashboard",
-      label: "Overview",
-      description: "Ringkasan aktivitas",
-      icon: LayoutDashboard,
-    },
-    {
-      href: "/dashboard/bookings",
-      label: "Booking",
-      description: "Jadwal dan klien",
-      icon: CalendarCheck,
-    },
-    {
-      href: "/dashboard/timeline",
-      label: "Timeline",
-      description: "Agenda pelaksanaan",
-      icon: Clock3,
-    },
-    ...(user.role === "ADMIN" ? adminLinks : []),
-    {
-      href: "/dashboard/payments",
-      label: "Pembayaran",
-      description: "Tagihan dan bukti",
-      icon: CreditCard,
-    },
-    {
-      href: "/dashboard/gallery",
-      label: "Galeri",
-      description: "Dokumentasi acara",
-      icon: Images,
-    },
-    {
-      href: "/dashboard/chat",
-      label: "Chat",
-      description: "Percakapan booking",
-      icon: MessageSquare,
-    },
-    {
-      href: "/dashboard/profile",
-      label: "Profil",
-      description: "Akun dan identitas",
-      icon: UserRound,
-    },
-  ];
+  const [dateLabel] = useState(() =>
+    new Intl.DateTimeFormat("id-ID", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+      timeZone: "Asia/Jakarta",
+    }).format(new Date()),
+  );
 
-  const currentTitle =
-    pageTitles[pathname] ??
-    Object.entries(pageTitles).find(([path]) => pathname.startsWith(path))?.[1] ??
-    "Dashboard";
+  const currentPage = pageTitles[pathname] ?? {
+    title: "Dashboard",
+    note: "Kelola operasional acara.",
+  };
 
-  const dateLabel = new Intl.DateTimeFormat("id-ID", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    timeZone: "Asia/Jakarta",
-  }).format(new Date());
+  function renderLink({ href, label, icon: Icon }: NavigationItem) {
+    const active = href === "/dashboard" ? pathname === href : pathname.startsWith(href);
+
+    return (
+      <Link
+        className={`dashboard-nav-link${active ? " active" : ""}`}
+        href={href}
+        key={href}
+        aria-current={active ? "page" : undefined}
+        onClick={() => setMobileOpen(false)}
+      >
+        <Icon size={17} strokeWidth={1.8} aria-hidden="true" />
+        <span>{label}</span>
+      </Link>
+    );
+  }
 
   return (
     <div className="dashboard-shell">
-      <button
-        className="mobile-menu-trigger"
-        type="button"
-        aria-label="Buka navigasi"
-        onClick={() => setMobileOpen(true)}
-      >
-        <Menu size={20} />
-      </button>
-
       {mobileOpen && (
         <button
-          className="sidebar-backdrop"
+          className="dashboard-backdrop"
           type="button"
           aria-label="Tutup navigasi"
           onClick={() => setMobileOpen(false)}
         />
       )}
 
-      <aside className={`sidebar${mobileOpen ? " mobile-open" : ""}`}>
-        <div className="sidebar-header">
-          <Link href="/" className="dashboard-brand" onClick={() => setMobileOpen(false)}>
-            <span className="dashboard-brand-mark">W</span>
-            <span>
-              <strong>Wedding</strong>
-              <small>Organizer Suite</small>
-            </span>
+      <aside className={`dashboard-sidebar${mobileOpen ? " mobile-open" : ""}`}>
+        <div className="dashboard-sidebar-head">
+          <Link href="/" className="dashboard-wordmark" onClick={() => setMobileOpen(false)}>
+            <strong>Wedding</strong>
+            <span>Organizer</span>
           </Link>
           <button
-            className="sidebar-close"
+            className="dashboard-sidebar-close"
             type="button"
             aria-label="Tutup navigasi"
             onClick={() => setMobileOpen(false)}
@@ -162,55 +147,32 @@ export default function DashboardShell({ user, children }: DashboardShellProps) 
           </button>
         </div>
 
-        <div className="sidebar-event-card">
-          <span className="sidebar-event-icon">
-            <Sparkles size={17} />
-          </span>
-          <div>
-            <small>Workspace</small>
-            <strong>Wedding operations</strong>
-          </div>
-          <ChevronRight size={16} />
+        <div className="dashboard-nav-group">
+          <p>Workspace</p>
+          <nav aria-label="Navigasi workspace">{primaryLinks.map(renderLink)}</nav>
         </div>
 
-        <div className="sidebar-label">Workspace</div>
-        <nav aria-label="Navigasi dashboard">
-          {links.map(({ href, label, description, icon: Icon }) => {
-            const isActive =
-              href === "/dashboard" ? pathname === href : pathname.startsWith(href);
+        {user.role === "ADMIN" && (
+          <div className="dashboard-nav-group">
+            <p>Master data</p>
+            <nav aria-label="Navigasi master data">{adminLinks.map(renderLink)}</nav>
+          </div>
+        )}
 
-            return (
-              <Link
-                aria-current={isActive ? "page" : undefined}
-                className={`nav-link${isActive ? " active" : ""}`}
-                href={href}
-                key={href}
-                onClick={() => setMobileOpen(false)}
-              >
-                <span className="nav-icon">
-                  <Icon size={18} strokeWidth={1.8} />
-                </span>
-                <span className="nav-copy">
-                  <strong>{label}</strong>
-                  <small>{description}</small>
-                </span>
-              </Link>
-            );
-          })}
-        </nav>
-
-        <div className="sidebar-footer">
-          <Link className="sidebar-profile" href="/dashboard/profile">
+        <div className="dashboard-sidebar-account">
+          <Link href="/dashboard/profile" className="dashboard-account-link">
             {user.avatarUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={user.avatarUrl} alt={user.name} />
             ) : (
-              <span>{user.name.slice(0, 1).toUpperCase()}</span>
+              <span className="dashboard-account-avatar">
+                {user.name.slice(0, 1).toUpperCase()}
+              </span>
             )}
-            <div>
+            <span>
               <strong>{user.name}</strong>
-              <small>{user.role === "ADMIN" ? "Administrator" : "Client account"}</small>
-            </div>
+              <small>{user.role === "ADMIN" ? "Administrator" : "Klien"}</small>
+            </span>
           </Link>
           <LogoutButton />
         </div>
@@ -218,21 +180,25 @@ export default function DashboardShell({ user, children }: DashboardShellProps) 
 
       <div className="dashboard-content">
         <header className="dashboard-topbar">
-          <div className="topbar-title">
-            <span>Wedding operations</span>
+          <div className="dashboard-topbar-title">
+            <button
+              className="dashboard-menu-button"
+              type="button"
+              aria-label="Buka navigasi"
+              onClick={() => setMobileOpen(true)}
+            >
+              <Menu size={20} />
+            </button>
             <div>
-              <h2>{currentTitle}</h2>
-              <PanelLeftClose size={15} />
+              <h1>{currentPage.title}</h1>
+              <p>{currentPage.note}</p>
             </div>
           </div>
-          <div className="topbar-actions">
-            <div className="today-chip">
-              <CalendarCheck size={16} />
-              <span>{dateLabel}</span>
-            </div>
-            <Link className="topbar-chat" href="/dashboard/chat" aria-label="Buka chat">
-              <MessageSquare size={18} />
-              <span>Chat</span>
+
+          <div className="dashboard-topbar-meta">
+            <span>{dateLabel}</span>
+            <Link href="/dashboard/profile" aria-label="Buka profil">
+              <UserRound size={18} aria-hidden="true" />
             </Link>
           </div>
         </header>

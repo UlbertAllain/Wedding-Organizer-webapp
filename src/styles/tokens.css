@@ -1,0 +1,30 @@
+:root {
+  --ink: #1f2421;
+  --ink-soft: #4d554f;
+  --ink-muted: #747b75;
+  --paper: #f7f5f0;
+  --paper-deep: #efede7;
+  --surface: #fffefa;
+  --surface-soft: #f3f1eb;
+  --forest: #24372e;
+  --forest-deep: #17271f;
+  --clay: #a45f4c;
+  --clay-soft: #ead8d0;
+  --line: #dcd8cf;
+  --line-strong: #c6c1b7;
+  --success: #35654a;
+  --success-soft: #e6f0e8;
+  --warning: #8b6126;
+  --warning-soft: #f5ead6;
+  --danger: #9a493f;
+  --danger-soft: #f5e4e1;
+  --info: #53697a;
+  --info-soft: #e8eef1;
+  --font-serif: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  --font-sans: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --shadow-soft: 0 18px 55px rgba(31, 36, 33, 0.08);
+  --container: 1240px;
+  --dashboard-sidebar: 248px;
+}

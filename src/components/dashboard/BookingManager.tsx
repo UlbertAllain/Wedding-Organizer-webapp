@@ -116,102 +116,140 @@ export default function BookingManager({ role }: { role: UserRole }) {
 
   return (
     <div className="page-stack">
-      <header className="page-header">
-        <div>
-          <span className="eyebrow">Operasional</span>
-          <h1>Booking</h1>
-          <p>
-            Kelola jadwal, pilihan paket, vendor, dan progres setiap pasangan
-            dari satu tampilan yang mudah dipantau.
-          </p>
-        </div>
-      </header>
-
       {message && <p className="alert">{message}</p>}
 
       {role === "USER" && (
-        <form className="panel form-grid" onSubmit={create}>
-          <h2 className="span-full">Booking baru</h2>
-          <label>
-            Paket
-            <select name="packageId" required>
-              <option value="">Pilih paket</option>
-              {packages.map((item) => (
-                <option value={item.id} key={item.id}>
-                  {item.name} — {formatCurrency(item.price)}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Tanggal acara
-            <input type="datetime-local" name="weddingDate" required />
-          </label>
-          <label>
-            Nama mempelai pria
-            <input name="groomName" required />
-          </label>
-          <label>
-            Nama mempelai wanita
-            <input name="brideName" required />
-          </label>
-          <label>
-            Telepon mempelai pria
-            <input name="groomPhone" type="tel" required />
-          </label>
-          <label>
-            Telepon mempelai wanita
-            <input name="bridePhone" type="tel" required />
-          </label>
-          <label>
-            Venue
-            <input name="venue" required />
-          </label>
-          <label>
-            Jenis akad/acara
-            <input name="ceremonyType" required />
-          </label>
-          <label className="span-full">
-            Alamat venue
-            <textarea name="venueAddress" required />
-          </label>
-          <label>
-            Tema
-            <input name="theme" />
-          </label>
-          <label>
-            Jumlah tamu
-            <input name="guestCount" type="number" min="1" required />
-          </label>
+        <form className="booking-form" onSubmit={create}>
+          <header className="booking-form-header">
+            <div>
+              <p className="section-label">Booking baru</p>
+              <h2>Susun informasi acara.</h2>
+            </div>
+            <p>
+              Isi data utama terlebih dahulu. Vendor tambahan dan catatan dapat
+              disesuaikan sebelum booking dikonfirmasi.
+            </p>
+          </header>
 
-          <fieldset className="checkbox-grid">
-            <legend>
-              Vendor tambahan{" "}
-              <span className="muted">
-                (total bila semua dipilih {formatCurrency(allVendorTotal)})
-              </span>
-            </legend>
-            {vendors.map((item) => (
-              <label className="check-row" key={item.id}>
-                <input
-                  type="checkbox"
-                  name="selectedVendorIds"
-                  value={item.id}
-                />
-                <span>
-                  {item.name} · {item.category} · {formatCurrency(item.price ?? 0)}
-                </span>
+          <section className="form-section">
+            <header>
+              <span>01</span>
+              <div>
+                <h3>Paket dan jadwal</h3>
+                <p>Tentukan layanan utama, tanggal, dan skala acara.</p>
+              </div>
+            </header>
+            <div className="form-grid">
+              <label>
+                Paket
+                <select name="packageId" required>
+                  <option value="">Pilih paket</option>
+                  {packages.map((item) => (
+                    <option value={item.id} key={item.id}>
+                      {item.name} — {formatCurrency(item.price)}
+                    </option>
+                  ))}
+                </select>
               </label>
-            ))}
-          </fieldset>
+              <label>
+                Tanggal acara
+                <input type="datetime-local" name="weddingDate" required />
+              </label>
+              <label>
+                Jenis akad/acara
+                <input name="ceremonyType" placeholder="Akad dan resepsi" required />
+              </label>
+              <label>
+                Jumlah tamu
+                <input name="guestCount" type="number" min="1" placeholder="500" required />
+              </label>
+            </div>
+          </section>
 
-          <label className="span-full">
-            Catatan
-            <textarea name="notes" />
-          </label>
-          <button className="button primary" disabled={busy}>
-            {busy ? "Menyimpan..." : "Buat booking"}
-          </button>
+          <section className="form-section">
+            <header>
+              <span>02</span>
+              <div>
+                <h3>Pasangan dan kontak</h3>
+                <p>Kontak digunakan untuk koordinasi terkait booking.</p>
+              </div>
+            </header>
+            <div className="form-grid">
+              <label>
+                Nama mempelai pria
+                <input name="groomName" required />
+              </label>
+              <label>
+                Nama mempelai wanita
+                <input name="brideName" required />
+              </label>
+              <label>
+                Telepon mempelai pria
+                <input name="groomPhone" type="tel" required />
+              </label>
+              <label>
+                Telepon mempelai wanita
+                <input name="bridePhone" type="tel" required />
+              </label>
+            </div>
+          </section>
+
+          <section className="form-section">
+            <header>
+              <span>03</span>
+              <div>
+                <h3>Lokasi dan kebutuhan</h3>
+                <p>Lengkapi venue, tema, vendor tambahan, dan catatan khusus.</p>
+              </div>
+            </header>
+            <div className="form-grid">
+              <label>
+                Venue
+                <input name="venue" required />
+              </label>
+              <label>
+                Tema
+                <input name="theme" placeholder="Modern, garden, tradisional..." />
+              </label>
+              <label className="span-full">
+                Alamat venue
+                <textarea name="venueAddress" required />
+              </label>
+
+              <fieldset className="checkbox-grid">
+                <legend>
+                  Vendor tambahan{" "}
+                  <span className="muted">
+                    (total bila semua dipilih {formatCurrency(allVendorTotal)})
+                  </span>
+                </legend>
+                {vendors.map((item) => (
+                  <label className="check-row" key={item.id}>
+                    <input
+                      type="checkbox"
+                      name="selectedVendorIds"
+                      value={item.id}
+                    />
+                    <span>
+                      {item.name} · {item.category} · {formatCurrency(item.price ?? 0)}
+                    </span>
+                  </label>
+                ))}
+              </fieldset>
+
+              <label className="span-full">
+                Catatan
+                <textarea name="notes" placeholder="Permintaan khusus atau informasi tambahan" />
+              </label>
+            </div>
+          </section>
+
+          <footer className="booking-form-footer">
+            <p>Booking dapat ditinjau kembali sebelum dikonfirmasi oleh admin.</p>
+            <button className="button button-dark button-large" disabled={busy}>
+              {busy ? "Menyimpan..." : "Buat booking"}
+            </button>
+          </footer>
         </form>
       )}
 
@@ -242,7 +280,7 @@ export default function BookingManager({ role }: { role: UserRole }) {
                 <td>{formatCurrency(item.totalPrice)}</td>
                 <td>
                   <span className={`badge ${item.status.toLowerCase()}`}>
-                    {item.status}
+                    {item.status.replaceAll("_", " ")}
                   </span>
                 </td>
                 <td>

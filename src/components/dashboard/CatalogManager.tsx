@@ -23,8 +23,22 @@ export default function CatalogManager({ mode }: { mode: CatalogMode }) {
   );
 
   useEffect(() => {
-    load().catch((error) => setMessage(error.message));
-  }, [load]);
+    let cancelled = false;
+
+    apiRequest<CatalogRecord[]>(`/api/${mode}`)
+      .then((data) => {
+        if (!cancelled) setItems(data);
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) {
+          setMessage(error instanceof Error ? error.message : "Load failed");
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [mode]);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

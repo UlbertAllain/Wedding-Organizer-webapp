@@ -1,16 +1,6 @@
 "use client";
 
-import {
-  ArrowRight,
-  ArrowUpRight,
-  CalendarDays,
-  Check,
-  Heart,
-  Images,
-  MessageCircleMore,
-  ShieldCheck,
-  Sparkles,
-} from "lucide-react";
+import { ArrowRight, ArrowUpRight, Check } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -18,308 +8,281 @@ import { apiRequest } from "@/lib/api-client";
 import { formatCurrency } from "@/lib/format";
 import type { PackageRecord } from "@/types/domain";
 
-const processItems = [
+const services = [
   {
     number: "01",
-    title: "Pilih paket dan tanggal",
+    title: "Perencanaan acara",
     description:
-      "Tentukan skala acara, tanggal, venue, dan kebutuhan awal tanpa formulir yang membingungkan.",
+      "Kami menyusun kebutuhan, prioritas, anggaran, dan keputusan penting menjadi rencana kerja yang realistis.",
   },
   {
     number: "02",
-    title: "Susun vendor dan timeline",
+    title: "Kurasi vendor",
     description:
-      "Koordinasikan vendor, agenda, pembayaran, serta detail acara dalam satu ruang kerja.",
+      "Rekomendasi vendor disesuaikan dengan karakter acara, bukan sekadar daftar pilihan yang panjang.",
   },
   {
     number: "03",
-    title: "Pantau sampai hari acara",
+    title: "Koordinasi hari acara",
     description:
-      "Klien dan tim organizer melihat status yang sama, sehingga tidak ada informasi tercecer.",
+      "Tim mengawal timeline, vendor, keluarga, dan detail lapangan agar pasangan dapat menikmati hari pernikahan.",
   },
 ];
 
-const featureItems = [
-  {
-    icon: CalendarDays,
-    title: "Booking terkontrol",
-    description: "Kuota tanggal dijaga secara transaksional untuk mencegah bentrok jadwal.",
-  },
-  {
-    icon: MessageCircleMore,
-    title: "Komunikasi terpusat",
-    description: "Percakapan penting tetap menempel pada booking yang sedang dikerjakan.",
-  },
-  {
-    icon: Images,
-    title: "Dokumentasi rapi",
-    description: "Galeri acara dan media pelanggan tersimpan aman melalui Cloudinary.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Akses sesuai peran",
-    description: "Admin dan klien hanya melihat tindakan yang memang menjadi kewenangannya.",
-  },
+const process = [
+  ["01", "Konsultasi", "Ceritakan visi, kebutuhan, dan batas anggaran."],
+  ["02", "Perencanaan", "Kami merangkai konsep, vendor, dan timeline kerja."],
+  ["03", "Pelaksanaan", "Seluruh detail dikawal sampai acara selesai."],
 ];
 
 export default function HomePage() {
   const [packages, setPackages] = useState<PackageRecord[]>([]);
 
   useEffect(() => {
+    let cancelled = false;
+
     apiRequest<PackageRecord[]>("/api/packages?active=true")
-      .then(setPackages)
-      .catch(() => setPackages([]));
+      .then((data) => {
+        if (!cancelled) setPackages(data);
+      })
+      .catch(() => {
+        if (!cancelled) setPackages([]);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return (
     <main className="public-site">
       <header className="public-header">
         <Link className="public-brand" href="/" aria-label="Wedding Organizer">
-          <span className="brand-mark">WO</span>
-          <span>
-            <strong>Wedding Organizer</strong>
-            <small>Plan beautifully</small>
-          </span>
+          <span className="public-brand-name">Wedding Organizer</span>
+          <span className="public-brand-note">Planning &amp; coordination</span>
         </Link>
 
         <nav className="public-links" aria-label="Navigasi utama">
           <a href="#layanan">Layanan</a>
-          <a href="#proses">Proses</a>
+          <a href="#cara-kerja">Cara kerja</a>
           <a href="#paket">Paket</a>
         </nav>
 
         <div className="nav-actions">
-          <Link className="button ghost" href="/login">
+          <Link className="button button-quiet" href="/login">
             Masuk
           </Link>
-          <Link className="button primary" href="/register">
-            Mulai rencana
-            <ArrowUpRight size={16} />
+          <Link className="button button-dark" href="/register">
+            Konsultasi
+            <ArrowUpRight size={16} aria-hidden="true" />
           </Link>
         </div>
       </header>
 
-      <section className="hero editorial-hero">
-        <div className="hero-copy">
-          <div className="hero-kicker">
-            <span className="kicker-line" />
-            <span>Wedding planning, thoughtfully organized</span>
-          </div>
+      <section className="public-hero">
+        <div className="public-hero-copy">
+          <p className="section-label">Wedding planning, made personal</p>
           <h1>
-            Hari istimewa yang terasa <em>tenang</em>, bukan melelahkan.
+            Pernikahan yang terasa <em>seperti kalian.</em>
           </h1>
-          <p className="hero-description">
-            Satu ruang kerja untuk memilih paket, mengelola vendor, menyusun
-            timeline, memantau pembayaran, dan berkomunikasi dengan tim organizer.
+          <p className="public-hero-lead">
+            Kami membantu pasangan merencanakan, memilih, dan mengeksekusi setiap
+            detail dengan tenang—tanpa membuat prosesnya terasa rumit.
           </p>
-          <div className="hero-actions">
-            <Link className="button primary button-lg" href="/register">
-              Rencanakan pernikahan
-              <ArrowRight size={17} />
+          <div className="public-hero-actions">
+            <Link className="button button-dark button-large" href="/register">
+              Mulai konsultasi
+              <ArrowRight size={17} aria-hidden="true" />
             </Link>
-            <a className="text-link" href="#paket">
-              Jelajahi paket <ArrowUpRight size={16} />
+            <a className="inline-link" href="#portfolio">
+              Lihat pendekatan kami
             </a>
           </div>
-          <div className="hero-proof">
-            <div className="proof-avatars" aria-hidden="true">
-              <span>R</span>
-              <span>A</span>
-              <span>N</span>
+          <dl className="public-hero-facts">
+            <div>
+              <dt>Satu tim</dt>
+              <dd>dari konsultasi sampai hari acara</dd>
             </div>
             <div>
-              <strong>Satu sumber informasi</strong>
-              <span>untuk klien, admin, vendor, dan seluruh agenda acara.</span>
+              <dt>Satu ruang kerja</dt>
+              <dd>untuk timeline, pembayaran, dan komunikasi</dd>
             </div>
-          </div>
+          </dl>
         </div>
 
-        <div className="hero-visual" aria-label="Inspirasi dekorasi pernikahan">
-          <div className="hero-photo hero-photo-main" />
-          <div className="hero-photo hero-photo-small" />
-          <div className="hero-monogram" aria-hidden="true">
-            <Heart size={24} strokeWidth={1.4} />
-            <span>Plan with intention</span>
-          </div>
-          <div className="hero-date-card">
-            <span>Upcoming</span>
-            <strong>Wedding day</strong>
-            <div>
-              <CalendarDays size={18} />
-              <p>
-                Timeline, vendor, dan pembayaran tersusun dalam satu tampilan.
-              </p>
-            </div>
-          </div>
-          <span className="hero-orbit orbit-one" />
-          <span className="hero-orbit orbit-two" />
-        </div>
+        <figure className="public-hero-image">
+          <div className="public-photo public-photo-couple" />
+          <figcaption>
+            <span>Intentional weddings</span>
+            <span>Jakarta · Bandung · Bali</span>
+          </figcaption>
+        </figure>
       </section>
 
-      <section className="trust-strip" aria-label="Keunggulan sistem">
-        <span>FIREBASE AUTH</span>
-        <i />
-        <span>FIRESTORE</span>
-        <i />
-        <span>CLOUDINARY MEDIA</span>
-        <i />
-        <span>MIDTRANS READY</span>
+      <section className="public-assurance" aria-label="Nilai layanan">
+        <p>Rencana yang transparan</p>
+        <p>Vendor yang relevan</p>
+        <p>Koordinasi satu pintu</p>
+        <p>Informasi yang selalu tercatat</p>
       </section>
 
-      <section className="section feature-section" id="layanan">
-        <div className="section-heading split-heading">
-          <div>
-            <span className="eyebrow">Ruang kerja menyeluruh</span>
-            <h2>Bukan sekadar formulir booking.</h2>
-          </div>
+      <section className="public-section services-section" id="layanan">
+        <div className="section-intro">
+          <p className="section-label">Layanan inti</p>
+          <h2>Struktur yang rapi, tetap terasa personal.</h2>
           <p>
-            Setiap modul dirancang mengikuti alur kerja wedding organizer, bukan
-            menumpuk menu yang tidak pernah dipakai.
+            Sistem kerja kami menyederhanakan keputusan besar menjadi langkah yang
+            jelas, tanpa menghilangkan karakter acara yang ingin kalian bangun.
           </p>
         </div>
 
-        <div className="feature-editorial-grid">
-          <article className="feature-story-card">
-            <div className="feature-story-photo" />
-            <div className="feature-story-overlay">
-              <Sparkles size={20} />
-              <strong>From first plan to final moment.</strong>
-              <p>Semua keputusan penting tetap terbaca dan dapat ditindaklanjuti.</p>
-            </div>
-          </article>
-
-          <div className="feature-list-grid">
-            {featureItems.map(({ icon: Icon, title, description }, index) => (
-              <article className="feature-card" key={title}>
-                <span className="feature-index">0{index + 1}</span>
-                <div className="feature-icon">
-                  <Icon size={21} strokeWidth={1.7} />
+        <div className="services-layout">
+          <div className="service-list">
+            {services.map((service) => (
+              <article className="service-row" key={service.number}>
+                <span>{service.number}</span>
+                <div>
+                  <h3>{service.title}</h3>
+                  <p>{service.description}</p>
                 </div>
-                <h3>{title}</h3>
-                <p>{description}</p>
               </article>
             ))}
           </div>
+          <figure className="service-image-frame">
+            <div className="public-photo public-photo-table" />
+            <figcaption>Detail yang konsisten membentuk pengalaman yang utuh.</figcaption>
+          </figure>
         </div>
       </section>
 
-      <section className="section process-section" id="proses">
-        <div className="process-intro">
-          <span className="eyebrow light">Alur yang jelas</span>
-          <h2>Perencanaan besar, dibagi menjadi langkah yang masuk akal.</h2>
+      <section className="portfolio-section" id="portfolio">
+        <div className="portfolio-copy">
+          <p className="section-label section-label-light">Pendekatan kami</p>
+          <h2>Tidak ada dua pernikahan yang harus terlihat sama.</h2>
           <p>
-            Dashboard mempertemukan sisi emosional sebuah pernikahan dengan
-            kebutuhan operasional yang presisi.
+            Konsep yang baik bukan soal menambah dekorasi sebanyak mungkin. Ia
+            lahir dari pilihan yang konsisten—venue, warna, ritme acara, sampai
+            cara tamu merasakan setiap momen.
           </p>
-          <Link className="button light-button" href="/register">
-            Buat akun klien <ArrowUpRight size={16} />
+          <Link href="/register" className="inline-link inline-link-light">
+            Ceritakan rencana kalian
+            <ArrowUpRight size={16} aria-hidden="true" />
           </Link>
         </div>
+        <figure className="portfolio-image">
+          <div className="public-photo public-photo-venue" />
+          <figcaption>
+            <strong>Modern ceremony</strong>
+            <span>Natural texture, restrained palette, clear focal point.</span>
+          </figcaption>
+        </figure>
+      </section>
 
-        <div className="process-list">
-          {processItems.map((item) => (
-            <article className="process-item" key={item.number}>
-              <span>{item.number}</span>
-              <div>
-                <h3>{item.title}</h3>
-                <p>{item.description}</p>
-              </div>
-              <ArrowUpRight size={20} />
+      <section className="public-section process-section" id="cara-kerja">
+        <div className="section-intro section-intro-wide">
+          <p className="section-label">Cara kerja</p>
+          <h2>Jelas sejak pertemuan pertama.</h2>
+        </div>
+        <div className="process-grid">
+          {process.map(([number, title, description]) => (
+            <article key={number}>
+              <span>{number}</span>
+              <h3>{title}</h3>
+              <p>{description}</p>
             </article>
           ))}
         </div>
       </section>
 
-      <section className="section packages-section" id="paket">
-        <div className="section-heading package-heading">
+      <section className="public-section package-section" id="paket">
+        <div className="section-intro package-intro">
           <div>
-            <span className="eyebrow">Paket layanan</span>
-            <h2>Pilih fondasi acara, lalu sesuaikan detailnya.</h2>
+            <p className="section-label">Paket layanan</p>
+            <h2>Pilih cakupan kerja yang paling masuk akal.</h2>
           </div>
           <p>
-            Harga, fasilitas, dan vendor tambahan tampil transparan sebelum
-            booking dibuat.
+            Setiap paket dapat dikembangkan bersama vendor tambahan sesuai kebutuhan
+            dan karakter acara.
           </p>
         </div>
 
-        <div className="package-showcase-grid">
+        <div className="package-grid">
           {packages.length ? (
             packages.map((item, index) => (
-              <article
-                className={`package-showcase-card${index === 1 ? " featured" : ""}`}
-                key={item.id}
-              >
+              <article className="package-card" key={item.id}>
                 <div
-                  className="package-photo"
+                  className="package-card-image"
                   style={
                     item.imageUrl
                       ? { backgroundImage: `url(${item.imageUrl})` }
                       : undefined
                   }
                 >
-                  <span>{index === 1 ? "Most considered" : `Collection 0${index + 1}`}</span>
+                  <span>Paket {String(index + 1).padStart(2, "0")}</span>
                 </div>
-                <div className="package-content">
-                  <div className="package-title-row">
+                <div className="package-card-body">
+                  <div className="package-card-heading">
                     <h3>{item.name}</h3>
-                    <ArrowUpRight size={20} />
+                    <strong>{formatCurrency(item.price)}</strong>
                   </div>
                   <p>{item.description}</p>
-                  <strong className="price">{formatCurrency(item.price)}</strong>
-                  <ul className="feature-list">
-                    {item.features.slice(0, 5).map((feature) => (
+                  <ul>
+                    {item.features.slice(0, 4).map((feature) => (
                       <li key={feature}>
-                        <Check size={15} />
+                        <Check size={14} aria-hidden="true" />
                         {feature}
                       </li>
                     ))}
                   </ul>
-                  <Link className="button package-button full" href="/register">
+                  <Link className="inline-link" href="/register">
                     Pilih paket
-                    <ArrowRight size={16} />
+                    <ArrowRight size={15} aria-hidden="true" />
                   </Link>
                 </div>
               </article>
             ))
           ) : (
-            <div className="empty-state package-empty">
-              <Sparkles size={24} />
-              <strong>Paket sedang disiapkan</strong>
-              <span>Admin dapat menambahkan paket dari dashboard.</span>
+            <div className="package-empty">
+              <p className="section-label">Paket segera tersedia</p>
+              <h3>Katalog sedang disusun oleh tim organizer.</h3>
+              <p>Kalian tetap dapat memulai konsultasi dan mendiskusikan kebutuhan khusus.</p>
+              <Link className="button button-dark" href="/register">
+                Mulai konsultasi
+              </Link>
             </div>
           )}
         </div>
       </section>
 
-      <section className="section closing-section">
-        <div className="closing-card">
-          <div className="closing-copy">
-            <span className="eyebrow light">Ready when you are</span>
-            <h2>Mulai dari rencana yang rapi.</h2>
-            <p>
-              Buat akun, tentukan tanggal, dan biarkan seluruh detail penting
-              tersusun dalam satu sistem yang dapat dipantau bersama.
-            </p>
-            <Link className="button light-button" href="/register">
-              Mulai sekarang <ArrowUpRight size={16} />
-            </Link>
-          </div>
-          <div className="closing-photo" />
+      <section className="testimonial-section">
+        <blockquote>
+          “Proses yang baik tidak mengambil alih cerita pasangan. Ia memberi ruang
+          agar cerita itu dapat diwujudkan dengan lebih tenang.”
+        </blockquote>
+        <p>Prinsip kerja Wedding Organizer</p>
+      </section>
+
+      <section className="public-cta">
+        <div>
+          <p className="section-label section-label-light">Mulai dari percakapan</p>
+          <h2>Sudah punya tanggal, atau masih merangkai kemungkinan?</h2>
         </div>
+        <Link className="button button-light button-large" href="/register">
+          Jadwalkan konsultasi
+          <ArrowRight size={17} aria-hidden="true" />
+        </Link>
       </section>
 
       <footer className="public-footer">
-        <Link className="public-brand footer-brand" href="/">
-          <span className="brand-mark">WO</span>
-          <span>
-            <strong>Wedding Organizer</strong>
-            <small>Plan beautifully</small>
-          </span>
-        </Link>
-        <p>Booking dan operasional wedding organizer dalam satu ruang kerja.</p>
+        <div>
+          <strong>Wedding Organizer</strong>
+          <span>Planning &amp; coordination</span>
+        </div>
+        <p>Perencanaan yang terstruktur untuk perayaan yang terasa personal.</p>
         <div>
           <Link href="/login">Masuk</Link>
-          <Link href="/register">Daftar</Link>
+          <a href="#layanan">Layanan</a>
+          <a href="#paket">Paket</a>
         </div>
       </footer>
     </main>

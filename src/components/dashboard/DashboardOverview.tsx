@@ -1,19 +1,8 @@
 "use client";
 
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import {
-  ArrowRight,
-  CalendarDays,
-  Camera,
-  CheckCircle2,
-  Clock3,
-  CreditCard,
-  HeartHandshake,
-  MessageSquareMore,
-  Sparkles,
-  WalletCards,
-} from "lucide-react";
 
 import { apiRequest } from "@/lib/api-client";
 import { formatCurrency, formatDate } from "@/lib/format";
@@ -28,14 +17,14 @@ interface DashboardOverviewProps {
   user: UserProfile;
 }
 
-const statusProgress: Record<BookingRecord["status"], number> = {
-  PENDING: 12,
-  CONFIRMED: 32,
-  REJECTED: 0,
-  PAID: 56,
-  IN_PROGRESS: 78,
-  COMPLETED: 100,
-  CANCELLED: 0,
+const statusLabels: Record<BookingRecord["status"], string> = {
+  PENDING: "Menunggu konfirmasi",
+  CONFIRMED: "Terkonfirmasi",
+  REJECTED: "Ditolak",
+  PAID: "Pembayaran selesai",
+  IN_PROGRESS: "Dalam persiapan",
+  COMPLETED: "Selesai",
+  CANCELLED: "Dibatalkan",
 };
 
 export default function DashboardOverview({ user }: DashboardOverviewProps) {
@@ -46,16 +35,23 @@ export default function DashboardOverview({ user }: DashboardOverviewProps) {
   const [initialNow] = useState(() => Date.now());
 
   useEffect(() => {
+    let cancelled = false;
+
     Promise.allSettled([
       apiRequest<BookingRecord[]>("/api/bookings"),
       apiRequest<PaymentRecord[]>("/api/payments"),
       apiRequest<GalleryRecord[]>("/api/gallery"),
     ]).then(([bookingResult, paymentResult, galleryResult]) => {
+      if (cancelled) return;
       if (bookingResult.status === "fulfilled") setBookings(bookingResult.value);
       if (paymentResult.status === "fulfilled") setPayments(paymentResult.value);
       if (galleryResult.status === "fulfilled") setGallery(galleryResult.value);
       setLoading(false);
     });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const activeBookings = useMemo(
@@ -65,10 +61,7 @@ export default function DashboardOverview({ user }: DashboardOverviewProps) {
       ),
     [bookings],
   );
-  const paidValue = payments
-    .filter((item) => item.status === "PAID")
-    .reduce((sum, item) => sum + item.amount, 0);
-  const pendingPayments = payments.filter((item) => item.status === "PENDING").length;
+
   const nextBooking = useMemo(
     () =>
       [...activeBookings]
@@ -80,103 +73,46 @@ export default function DashboardOverview({ user }: DashboardOverviewProps) {
         )[0],
     [activeBookings, initialNow],
   );
-  const progress = nextBooking ? statusProgress[nextBooking.status] : 0;
+
+  const paidValue = payments
+    .filter((item) => item.status === "PAID")
+    .reduce((sum, item) => sum + item.amount, 0);
+  const pendingPayments = payments.filter((item) => item.status === "PENDING");
+  const pendingValue = pendingPayments.reduce((sum, item) => sum + item.amount, 0);
+  const recentBookings = [...bookings]
+    .sort(
+      (first, second) =>
+        new Date(second.createdAt).getTime() - new Date(first.createdAt).getTime(),
+    )
+    .slice(0, 4);
 
   return (
     <div className="page-stack overview-page">
-      <section className="overview-hero">
-        <div className="overview-hero-copy">
-          <span className="eyebrow light">Good to see you</span>
-          <h1>
-            Selamat datang,
-            <br />
-            {user.name}.
-          </h1>
+      <section className="overview-intro">
+        <div>
+          <p className="section-label">Selamat datang</p>
+          <h2>{user.name}</h2>
           <p>
-            Pantau setiap keputusan penting tanpa kehilangan konteks antara klien,
-            timeline, pembayaran, dan dokumentasi.
+            {user.role === "ADMIN"
+              ? "Berikut prioritas operasional yang perlu diperhatikan hari ini."
+              : "Berikut perkembangan rencana pernikahan yang tercatat saat ini."}
           </p>
-          <div className="overview-hero-actions">
-            <Link className="button light-button" href="/dashboard/bookings">
-              Lihat booking <ArrowRight size={16} />
-            </Link>
-            <Link className="overview-chat-link" href="/dashboard/chat">
-              <MessageSquareMore size={17} />
-              Buka percakapan
-            </Link>
-          </div>
         </div>
-        <div className="overview-hero-art" aria-hidden="true">
-          <span className="art-ring ring-a" />
-          <span className="art-ring ring-b" />
-          <div className="art-card art-card-main">
-            <HeartHandshake size={26} />
-            <span>Everything in sync</span>
-          </div>
-          <div className="art-card art-card-small">
-            <Sparkles size={18} />
-            <span>Plan with clarity</span>
-          </div>
-        </div>
+        <span className="role-label">{user.role === "ADMIN" ? "Administrator" : "Akun klien"}</span>
       </section>
 
-      <section className="metric-grid">
-        <article className="metric-card">
-          <span className="metric-icon peach">
-            <CalendarDays size={20} />
-          </span>
-          <div>
-            <small>Booking aktif</small>
-            <strong>{loading ? "—" : activeBookings.length}</strong>
-            <p>{bookings.length} booking tercatat</p>
-          </div>
-          <Link href="/dashboard/bookings" aria-label="Lihat booking">
-            <ArrowRight size={17} />
-          </Link>
-        </article>
-        <article className="metric-card">
-          <span className="metric-icon sage">
-            <WalletCards size={20} />
-          </span>
-          <div>
-            <small>Nilai terbayar</small>
-            <strong className="metric-currency">
-              {loading ? "—" : formatCurrency(paidValue)}
-            </strong>
-            <p>{pendingPayments} pembayaran menunggu</p>
-          </div>
-          <Link href="/dashboard/payments" aria-label="Lihat pembayaran">
-            <ArrowRight size={17} />
-          </Link>
-        </article>
-        <article className="metric-card">
-          <span className="metric-icon lavender">
-            <Camera size={20} />
-          </span>
-          <div>
-            <small>Dokumentasi</small>
-            <strong>{loading ? "—" : gallery.length}</strong>
-            <p>foto tersimpan di galeri</p>
-          </div>
-          <Link href="/dashboard/gallery" aria-label="Lihat galeri">
-            <ArrowRight size={17} />
-          </Link>
-        </article>
-      </section>
-
-      <section className="overview-grid">
-        <article className="next-event-card">
-          <div className="card-section-heading">
-            <div>
-              <span className="eyebrow">Next milestone</span>
-              <h2>Acara terdekat</h2>
-            </div>
-            <Link href="/dashboard/bookings">Semua booking</Link>
-          </div>
+      <section className="overview-primary-grid">
+        <article className="next-event-panel">
+          <header>
+            <p className="section-label">Acara terdekat</p>
+            <Link href="/dashboard/bookings">
+              Semua booking <ArrowRight size={15} aria-hidden="true" />
+            </Link>
+          </header>
 
           {nextBooking ? (
-            <div className="next-event-content">
-              <div className="event-date-block">
+            <div className="next-event-detail">
+              <div className="next-event-date">
                 <span>
                   {new Intl.DateTimeFormat("id-ID", { month: "short" })
                     .format(new Date(nextBooking.weddingDate))
@@ -185,101 +121,124 @@ export default function DashboardOverview({ user }: DashboardOverviewProps) {
                 <strong>{new Date(nextBooking.weddingDate).getDate()}</strong>
                 <small>{new Date(nextBooking.weddingDate).getFullYear()}</small>
               </div>
-              <div className="event-main-copy">
+
+              <div className="next-event-copy">
                 <span className={`badge ${nextBooking.status.toLowerCase()}`}>
-                  {nextBooking.status.replaceAll("_", " ")}
+                  {statusLabels[nextBooking.status]}
                 </span>
                 <h3>
-                  {nextBooking.groomName} &amp; {nextBooking.brideName}
+                  {nextBooking.groomName} <em>&amp;</em> {nextBooking.brideName}
                 </h3>
                 <p>{nextBooking.packageName}</p>
-                <div className="event-meta-row">
-                  <span>
-                    <CalendarDays size={15} /> {formatDate(nextBooking.weddingDate)}
-                  </span>
-                  <span>
-                    <Clock3 size={15} /> {nextBooking.venue}
-                  </span>
-                </div>
-              </div>
-              <div className="event-progress">
-                <div
-                  className="progress-ring"
-                  style={{ "--progress": `${progress * 3.6}deg` } as React.CSSProperties}
-                >
-                  <span>{progress}%</span>
-                </div>
-                <small>Progress</small>
+                <dl>
+                  <div>
+                    <dt>Tanggal</dt>
+                    <dd>{formatDate(nextBooking.weddingDate)}</dd>
+                  </div>
+                  <div>
+                    <dt>Venue</dt>
+                    <dd>{nextBooking.venue}</dd>
+                  </div>
+                  <div>
+                    <dt>Nilai booking</dt>
+                    <dd>{formatCurrency(nextBooking.totalPrice)}</dd>
+                  </div>
+                </dl>
               </div>
             </div>
           ) : (
             <div className="overview-empty">
-              <CalendarDays size={26} />
-              <div>
-                <strong>Belum ada acara mendatang</strong>
-                <p>Booking baru akan muncul di bagian ini secara otomatis.</p>
-              </div>
-              <Link className="button secondary small" href="/dashboard/bookings">
+              <h3>Belum ada acara mendatang.</h3>
+              <p>Booking yang aktif akan tampil di sini setelah dibuat atau dikonfirmasi.</p>
+              <Link className="button button-outline" href="/dashboard/bookings">
                 Buka booking
               </Link>
             </div>
           )}
         </article>
 
-        <article className="quick-actions-card">
-          <div className="card-section-heading">
+        <aside className="overview-summary-panel">
+          <p className="section-label">Ringkasan</p>
+          <dl>
             <div>
-              <span className="eyebrow">Shortcuts</span>
-              <h2>Aksi cepat</h2>
+              <dt>Booking aktif</dt>
+              <dd>{loading ? "—" : activeBookings.length}</dd>
+              <small>dari {bookings.length} booking tercatat</small>
             </div>
-          </div>
-          <div className="quick-action-list">
-            <Link href="/dashboard/timeline">
-              <span className="quick-action-icon">
-                <Clock3 size={18} />
-              </span>
-              <div>
-                <strong>Kelola timeline</strong>
-                <small>Susun agenda pelaksanaan</small>
-              </div>
-              <ArrowRight size={16} />
-            </Link>
-            <Link href="/dashboard/payments">
-              <span className="quick-action-icon">
-                <CreditCard size={18} />
-              </span>
-              <div>
-                <strong>Cek pembayaran</strong>
-                <small>Verifikasi status tagihan</small>
-              </div>
-              <ArrowRight size={16} />
-            </Link>
-            <Link href="/dashboard/gallery">
-              <span className="quick-action-icon">
-                <Camera size={18} />
-              </span>
-              <div>
-                <strong>Buka galeri</strong>
-                <small>Lihat dokumentasi acara</small>
-              </div>
-              <ArrowRight size={16} />
-            </Link>
-          </div>
-        </article>
+            <div>
+              <dt>Pembayaran menunggu</dt>
+              <dd>{loading ? "—" : pendingPayments.length}</dd>
+              <small>{loading ? "Memuat data" : formatCurrency(pendingValue)}</small>
+            </div>
+            <div>
+              <dt>Nilai terbayar</dt>
+              <dd className="summary-currency">{loading ? "—" : formatCurrency(paidValue)}</dd>
+              <small>pembayaran berstatus lunas</small>
+            </div>
+            <div>
+              <dt>Dokumentasi</dt>
+              <dd>{loading ? "—" : gallery.length}</dd>
+              <small>foto tersimpan</small>
+            </div>
+          </dl>
+        </aside>
       </section>
 
-      <section className="status-rail">
-        <div>
-          <span className="status-dot online" />
-          <p>
-            <strong>Sistem operasional aktif</strong>
-            <span>Firebase, Firestore, dan Cloudinary siap digunakan.</span>
-          </p>
-        </div>
-        <div className="status-security">
-          <CheckCircle2 size={17} />
-          <span>Role-protected workspace</span>
-        </div>
+      <section className="overview-secondary-grid">
+        <article className="overview-list-panel">
+          <header>
+            <div>
+              <p className="section-label">Aktivitas</p>
+              <h3>Booking terbaru</h3>
+            </div>
+            <Link href="/dashboard/bookings">Lihat semua</Link>
+          </header>
+
+          <div className="compact-record-list">
+            {recentBookings.map((item) => (
+              <Link href="/dashboard/bookings" key={item.id}>
+                <div>
+                  <strong>{item.groomName} &amp; {item.brideName}</strong>
+                  <span>{item.venue} · {formatDate(item.weddingDate)}</span>
+                </div>
+                <span className={`badge ${item.status.toLowerCase()}`}>
+                  {statusLabels[item.status]}
+                </span>
+              </Link>
+            ))}
+            {!recentBookings.length && (
+              <div className="list-empty">Belum ada booking yang tercatat.</div>
+            )}
+          </div>
+        </article>
+
+        <article className="workspace-links-panel">
+          <p className="section-label">Lanjutkan pekerjaan</p>
+          <h3>Akses cepat</h3>
+          <nav>
+            <Link href="/dashboard/timeline">
+              <span>
+                <strong>Timeline acara</strong>
+                <small>Susun agenda persiapan dan pelaksanaan</small>
+              </span>
+              <ArrowRight size={16} aria-hidden="true" />
+            </Link>
+            <Link href="/dashboard/payments">
+              <span>
+                <strong>Pembayaran</strong>
+                <small>Periksa tagihan dan bukti transfer</small>
+              </span>
+              <ArrowRight size={16} aria-hidden="true" />
+            </Link>
+            <Link href="/dashboard/chat">
+              <span>
+                <strong>Percakapan</strong>
+                <small>Lanjutkan koordinasi terkait booking</small>
+              </span>
+              <ArrowRight size={16} aria-hidden="true" />
+            </Link>
+          </nav>
+        </article>
       </section>
     </div>
   );

@@ -25,12 +25,12 @@ export default function LogoutButton() {
 
   return (
     <button
-      className="nav-link danger"
+      className="dashboard-logout"
       type="button"
       disabled={busy}
       onClick={logout}
     >
-      <LogOut size={18} />
+      <LogOut size={16} aria-hidden="true" />
       {busy ? "Keluar..." : "Keluar"}
     </button>
   );

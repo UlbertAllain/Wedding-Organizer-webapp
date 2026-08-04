@@ -7,11 +7,12 @@ export const metadata: Metadata = {
     template: "%s | Wedding Organizer",
   },
   description:
-    "Booking dan operasional wedding organizer dalam satu sistem yang terstruktur.",
+    "Perencanaan, booking, pembayaran, timeline, dan koordinasi wedding organizer dalam satu ruang kerja.",
 };
 
 export const viewport: Viewport = {
-  themeColor: "#221c18",
+  themeColor: "#17271f",
+  colorScheme: "light",
   width: "device-width",
   initialScale: 1,
 };

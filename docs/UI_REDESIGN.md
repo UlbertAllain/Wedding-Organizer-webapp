@@ -1,39 +1,44 @@
-# UI/UX Redesign
+# Editorial UI Redesign
 
-## Arah visual
+## Putusan desain
 
-Antarmuka dipindahkan dari tampilan admin generik menjadi wedding operations
-workspace dengan pendekatan editorial modern. Sistem tetap profesional untuk
-operasional, tetapi memiliki identitas visual yang relevan dengan industri
-wedding.
+Antarmuka lama dibuang sebagai bahasa visual karena terlalu bergantung pada
+rounded card, ikon dekoratif, gradient, badge, dan copy teknis. Versi ini
+menggunakan pendekatan editorial modern yang lebih dekat dengan studio wedding
+profesional.
 
 ## Perubahan utama
 
-- Landing page kini memiliki visual hierarchy lengkap: navigation, editorial
-  hero, ilustrasi lokal, trust strip, capability section, workflow, katalog
-  paket, CTA, dan footer.
-- Dashboard memakai sidebar informatif, contextual topbar, mobile drawer,
-  overview berbasis data API, acara terdekat, progress, dan quick actions.
-- Login dan register memakai split-screen experience dengan konteks produk,
-  manfaat sistem, dan form yang lebih fokus.
-- Form, tabel, badge, empty state, galeri, chat, dan timeline menggunakan satu
-  design system yang konsisten.
-- Seluruh ilustrasi landing bersifat lokal di `public/images/landing`; media
-  operasional yang diunggah pengguna tetap melalui Cloudinary.
-- Responsiveness mencakup desktop, tablet, dan mobile. Sidebar berubah menjadi
-  drawer pada layar kecil.
+- Landing page dibangun ulang dengan satu fokus visual, foto editorial, layanan
+  bernomor, portfolio, proses kerja, paket dinamis, dan CTA konsultasi.
+- Informasi Firebase, Firestore, Cloudinary, cookie, serta status sistem dihapus
+  dari halaman yang dilihat klien.
+- Login/register menggunakan split layout yang sederhana dan copy yang relevan
+  bagi pengguna.
+- Dashboard tidak lagi memiliki hero dekoratif, orbit, kartu sparkle, atau
+  progress palsu berdasarkan status.
+- Overview menampilkan data operasional: acara terdekat, booking aktif,
+  pembayaran, dokumentasi, dan aktivitas terbaru.
+- Booking form dibagi menjadi tiga bagian agar urutan pengisian lebih jelas.
+- Ikon dibatasi untuk navigasi dan aksi penting; konten utama mengandalkan
+  tipografi, divider, tabel, list, dan whitespace.
+- Stylesheet monolitik dipecah berdasarkan domain agar perubahan berikutnya
+  lebih mudah dikendalikan.
 
-## File UI utama
+## Struktur stylesheet
 
-- `src/app/globals.css`
-- `src/app/page.tsx`
-- `src/components/auth/AuthForm.tsx`
-- `src/components/dashboard/DashboardShell.tsx`
-- `src/components/dashboard/DashboardOverview.tsx`
-- `public/images/landing/*.svg`
+```text
+src/styles/
+├── tokens.css
+├── base.css
+├── public.css
+├── auth.css
+├── dashboard.css
+└── workspace.css
+```
 
-## Catatan branding
+## Batas perubahan
 
-Nama, monogram, copy, dan tone warna masih dibuat netral agar mudah disesuaikan
-ke brand wedding organizer tertentu. Tidak ada aset foto pihak ketiga yang
-menjadi dependency runtime.
+Redesign tidak mengubah model Firestore, route API, autentikasi, Cloudinary,
+atau integrasi pembayaran. Perubahan berfokus pada presentasi, komposisi,
+copywriting, serta pengalaman penggunaan.
