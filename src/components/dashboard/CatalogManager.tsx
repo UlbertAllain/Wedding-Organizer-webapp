@@ -68,6 +68,7 @@ export default function CatalogManager({ mode }: { mode: CatalogMode }) {
                 .split("\n")
                 .map((value) => value.trim())
                 .filter(Boolean),
+              isFeatured: form.get("isFeatured") === "on",
             }
           : {
               ...common,
@@ -160,14 +161,24 @@ export default function CatalogManager({ mode }: { mode: CatalogMode }) {
           <textarea name="description" defaultValue={editing?.description ?? ""} required={mode === "packages"} />
         </label>
         {mode === "packages" && (
-          <label className="span-full">
-            Fitur (satu per baris)
-            <textarea
-              name="features"
-              defaultValue={editingPackage?.features.join("\n") ?? ""}
-              required
-            />
-          </label>
+          <>
+            <label className="span-full">
+              Fitur (satu per baris)
+              <textarea
+                name="features"
+                defaultValue={editingPackage?.features.join("\n") ?? ""}
+                required
+              />
+            </label>
+            <label className="check-row span-full">
+              <input
+                name="isFeatured"
+                type="checkbox"
+                defaultChecked={editingPackage?.isFeatured ?? false}
+              />
+              <span>Tampilkan sebagai paket rekomendasi di landing page.</span>
+            </label>
+          </>
         )}
         <label className="span-full">
           Gambar {editing ? "baru (opsional)" : "(opsional)"}
@@ -214,7 +225,7 @@ export default function CatalogManager({ mode }: { mode: CatalogMode }) {
                 <td>
                   {"category" in item
                     ? item.category
-                    : `${item.features.length} fitur`}
+                    : `${item.features.length} fitur${item.isFeatured ? " · REKOMENDASI" : ""}`}
                 </td>
                 <td>{formatCurrency(item.price ?? 0)}</td>
                 <td>

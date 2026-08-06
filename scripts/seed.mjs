@@ -16,6 +16,7 @@ const app =
       privateKey: requiredEnv("FIREBASE_PRIVATE_KEY").replace(/\\n/g, "\n"),
     }),
   });
+
 const db = getFirestore(app);
 const now = FieldValue.serverTimestamp();
 
@@ -24,51 +25,88 @@ const packages = [
     id: "essential",
     name: "Essential",
     slug: "essential",
-    description: "Koordinasi inti untuk pernikahan yang ringkas dan terarah.",
-    price: 15_000_000,
-    features: ["Wedding planning", "Koordinasi hari-H", "Vendor coordination"],
+    description:
+      "Koordinasi terarah untuk pasangan yang sudah menyiapkan konsep dan vendor utama.",
+    price: 12_000_000,
+    features: [
+      "Wedding Day Coordination",
+      "Finalisasi timeline dan rundown",
+      "Koordinasi vendor menjelang hari H",
+      "Manajemen acara pada hari pernikahan",
+    ],
     imageUrl: null,
     imagePublicId: null,
     isActive: true,
+    isFeatured: false,
   },
   {
     id: "signature",
     name: "Signature",
     slug: "signature",
     description:
-      "Perencanaan menyeluruh dengan dukungan vendor dan dokumentasi.",
-    price: 30_000_000,
+      "Pendampingan lengkap dari penyusunan konsep sampai seluruh rangkaian perayaan selesai.",
+    price: 28_000_000,
     features: [
-      "Full planning",
-      "Vendor management",
-      "Dokumentasi",
-      "Timeline acara",
+      "Full Wedding Planning",
+      "Konsep dan desain pernikahan",
+      "Kurasi serta koordinasi vendor",
+      "Pendampingan menyeluruh sampai hari H",
     ],
     imageUrl: null,
     imagePublicId: null,
     isActive: true,
+    isFeatured: true,
+  },
+  {
+    id: "prestige",
+    name: "Prestige",
+    slug: "prestige",
+    description:
+      "Layanan bespoke untuk pernikahan dengan kebutuhan kompleks dan pendampingan intensif.",
+    price: 45_000_000,
+    features: [
+      "Seluruh layanan Signature",
+      "Konsep dan styling eksklusif",
+      "Vendor premium sesuai kebutuhan",
+      "Pendampingan intensif dan personal",
+    ],
+    imageUrl: null,
+    imagePublicId: null,
+    isActive: true,
+    isFeatured: false,
   },
 ];
 
 const vendors = [
   {
-    id: "photography",
-    name: "Photography Partner",
+    id: "photo-cinema",
+    name: "Lumière Photo & Cinema",
     category: "Dokumentasi",
-    description: "Paket foto acara.",
-    price: 5_000_000,
-    contact: null,
+    description: "Dokumentasi foto dan cinematic wedding film.",
+    price: 8_500_000,
+    contact: "+62 812 1000 2001",
     imageUrl: null,
     imagePublicId: null,
     isActive: true,
   },
   {
-    id: "decoration",
-    name: "Decoration Partner",
+    id: "decor-floral",
+    name: "Maison Floral Styling",
     category: "Dekorasi",
-    description: "Dekorasi venue dasar.",
+    description: "Styling venue, floral arrangement, dan dekorasi pelaminan.",
+    price: 18_000_000,
+    contact: "+62 812 1000 2002",
+    imageUrl: null,
+    imagePublicId: null,
+    isActive: true,
+  },
+  {
+    id: "makeup-attire",
+    name: "Atelier Bridal",
+    category: "Makeup & Attire",
+    description: "Makeup pengantin serta konsultasi busana untuk pasangan.",
     price: 7_500_000,
-    contact: null,
+    contact: "+62 812 1000 2003",
     imageUrl: null,
     imagePublicId: null,
     isActive: true,
@@ -76,22 +114,40 @@ const vendors = [
 ];
 
 const batch = db.batch();
+const existingFeatured = await db.collection("packages").where("isFeatured", "==", true).get();
+for (const snapshot of existingFeatured.docs) {
+  batch.update(snapshot.ref, { isFeatured: false, updatedAt: now });
+}
+
 for (const item of packages) {
+  const ref = db.collection("packages").doc(item.id);
+  const snapshot = await ref.get();
+
   batch.set(
-    db.collection("packages").doc(item.id),
-    { ...item, createdAt: now, updatedAt: now },
+    ref,
+    {
+      ...item,
+      createdAt: snapshot.exists ? snapshot.data()?.createdAt ?? now : now,
+      updatedAt: now,
+    },
     { merge: true },
   );
 }
+
 for (const item of vendors) {
+  const ref = db.collection("vendors").doc(item.id);
+  const snapshot = await ref.get();
+
   batch.set(
-    db.collection("vendors").doc(item.id),
-    { ...item, createdAt: now, updatedAt: now },
+    ref,
+    {
+      ...item,
+      createdAt: snapshot.exists ? snapshot.data()?.createdAt ?? now : now,
+      updatedAt: now,
+    },
     { merge: true },
   );
 }
 
 await batch.commit();
-console.log(
-  "Seed complete. Review and replace the sample records before production use.",
-);
+console.log(`Catalog seed complete: ${packages.length} packages and ${vendors.length} vendors.`);

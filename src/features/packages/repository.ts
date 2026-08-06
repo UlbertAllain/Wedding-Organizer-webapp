@@ -30,6 +30,19 @@ function normalizePackage(input: Partial<PackageInput>) {
   );
 }
 
+async function unfeatureOtherPackages(featuredId: string) {
+  const snapshot = await collection().where("isFeatured", "==", true).get();
+  const others = snapshot.docs.filter((doc) => doc.id !== featuredId);
+  if (!others.length) return;
+
+  const batch = getAdminDb().batch();
+  const updatedAt = FieldValue.serverTimestamp();
+  for (const doc of others) {
+    batch.update(doc.ref, { isFeatured: false, updatedAt });
+  }
+  await batch.commit();
+}
+
 export async function listPackages(options?: { activeOnly?: boolean }) {
   let query = collection().orderBy("createdAt", "desc").limit(100);
   if (options?.activeOnly) query = query.where("isActive", "==", true);
@@ -52,11 +65,13 @@ export async function createPackage(input: PackageInput) {
     ...normalizePackage(input),
     imageUrl: input.imageUrl ?? null,
     imagePublicId: input.imagePublicId ?? null,
+    isFeatured: input.isFeatured ?? false,
     slug: slugify(input.name),
     createdAt: now,
     updatedAt: now,
   });
 
+  if (input.isFeatured) await unfeatureOtherPackages(ref.id);
   return ref.id;
 }
 
@@ -68,6 +83,8 @@ export async function updatePackage(id: string, input: Partial<PackageInput>) {
       ...(input.name ? { slug: slugify(input.name) } : {}),
       updatedAt: FieldValue.serverTimestamp(),
     });
+
+  if (input.isFeatured) await unfeatureOtherPackages(id);
 }
 
 export async function deletePackage(id: string) {

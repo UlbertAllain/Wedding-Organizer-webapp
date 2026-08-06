@@ -8,6 +8,7 @@ export const packageInputSchema = z.object({
   imageUrl: z.string().url().nullable().optional(),
   imagePublicId: z.string().trim().nullable().optional(),
   isActive: z.boolean().default(true),
+  isFeatured: z.boolean().optional(),
 });
 
 export const packageUpdateSchema = packageInputSchema.partial();

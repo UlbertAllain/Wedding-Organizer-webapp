@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
@@ -74,6 +74,16 @@ export default function DashboardOverview({ user }: DashboardOverviewProps) {
     [activeBookings, initialNow],
   );
 
+  const daysUntilNext = nextBooking
+    ? Math.max(
+        0,
+        Math.ceil(
+          (new Date(nextBooking.weddingDate).getTime() - initialNow) /
+            (1000 * 60 * 60 * 24),
+        ),
+      )
+    : null;
+
   const paidValue = payments
     .filter((item) => item.status === "PAID")
     .reduce((sum, item) => sum + item.amount, 0);
@@ -84,45 +94,83 @@ export default function DashboardOverview({ user }: DashboardOverviewProps) {
       (first, second) =>
         new Date(second.createdAt).getTime() - new Date(first.createdAt).getTime(),
     )
-    .slice(0, 4);
+    .slice(0, 5);
+
+  const attentionItems = [
+    pendingPayments.length
+      ? {
+          label: "Pembayaran menunggu",
+          value: `${pendingPayments.length} tagihan`,
+          note: formatCurrency(pendingValue),
+          href: "/dashboard/payments",
+        }
+      : null,
+    activeBookings.filter((item) => item.status === "PENDING").length
+      ? {
+          label: "Booking perlu ditinjau",
+          value: `${activeBookings.filter((item) => item.status === "PENDING").length} booking`,
+          note: "Perlu konfirmasi tim",
+          href: "/dashboard/bookings",
+        }
+      : null,
+    {
+      label: "Dokumentasi tersimpan",
+      value: `${gallery.length} foto`,
+      note: "Koleksi galeri saat ini",
+      href: "/dashboard/gallery",
+    },
+  ].filter(Boolean) as Array<{
+    label: string;
+    value: string;
+    note: string;
+    href: string;
+  }>;
 
   return (
     <div className="page-stack overview-page">
-      <section className="overview-intro">
+      <section className="overview-opening">
         <div>
-          <p className="section-label">Selamat datang</p>
-          <h2>{user.name}</h2>
-          <p>
-            {user.role === "ADMIN"
-              ? "Berikut prioritas operasional yang perlu diperhatikan hari ini."
-              : "Berikut perkembangan rencana pernikahan yang tercatat saat ini."}
-          </p>
+          <p className="section-label">Hari ini</p>
+          <h2>
+            Selamat datang, <em>{user.name.split(" ")[0]}</em>.
+          </h2>
         </div>
-        <span className="role-label">{user.role === "ADMIN" ? "Administrator" : "Akun klien"}</span>
+        <p>
+          {user.role === "ADMIN"
+            ? "Fokuskan perhatian pada keputusan yang tertunda dan acara terdekat."
+            : "Semua perkembangan rencana pernikahanmu dirangkum di halaman ini."}
+        </p>
       </section>
 
-      <section className="overview-primary-grid">
-        <article className="next-event-panel">
+      <section className="overview-focus-grid">
+        <article className="featured-event">
           <header>
-            <p className="section-label">Acara terdekat</p>
-            <Link href="/dashboard/bookings">
-              Semua booking <ArrowRight size={15} aria-hidden="true" />
+            <div>
+              <span>Acara terdekat</span>
+              <p>{daysUntilNext === null ? "Belum dijadwalkan" : `${daysUntilNext} hari lagi`}</p>
+            </div>
+            <Link href="/dashboard/bookings" aria-label="Buka semua booking">
+              <ArrowUpRight size={18} aria-hidden="true" />
             </Link>
           </header>
 
           {nextBooking ? (
-            <div className="next-event-detail">
-              <div className="next-event-date">
+            <div className="featured-event-body">
+              <div className="featured-event-date">
+                <strong>
+                  {new Intl.DateTimeFormat("id-ID", { day: "2-digit" }).format(
+                    new Date(nextBooking.weddingDate),
+                  )}
+                </strong>
                 <span>
-                  {new Intl.DateTimeFormat("id-ID", { month: "short" })
-                    .format(new Date(nextBooking.weddingDate))
-                    .toUpperCase()}
+                  {new Intl.DateTimeFormat("id-ID", { month: "long" }).format(
+                    new Date(nextBooking.weddingDate),
+                  )}
                 </span>
-                <strong>{new Date(nextBooking.weddingDate).getDate()}</strong>
                 <small>{new Date(nextBooking.weddingDate).getFullYear()}</small>
               </div>
 
-              <div className="next-event-copy">
+              <div className="featured-event-copy">
                 <span className={`badge ${nextBooking.status.toLowerCase()}`}>
                   {statusLabels[nextBooking.status]}
                 </span>
@@ -130,62 +178,86 @@ export default function DashboardOverview({ user }: DashboardOverviewProps) {
                   {nextBooking.groomName} <em>&amp;</em> {nextBooking.brideName}
                 </h3>
                 <p>{nextBooking.packageName}</p>
-                <dl>
-                  <div>
-                    <dt>Tanggal</dt>
-                    <dd>{formatDate(nextBooking.weddingDate)}</dd>
-                  </div>
-                  <div>
-                    <dt>Venue</dt>
-                    <dd>{nextBooking.venue}</dd>
-                  </div>
-                  <div>
-                    <dt>Nilai booking</dt>
-                    <dd>{formatCurrency(nextBooking.totalPrice)}</dd>
-                  </div>
-                </dl>
               </div>
+
+              <dl>
+                <div>
+                  <dt>Venue</dt>
+                  <dd>{nextBooking.venue}</dd>
+                </div>
+                <div>
+                  <dt>Tanggal</dt>
+                  <dd>{formatDate(nextBooking.weddingDate)}</dd>
+                </div>
+                <div>
+                  <dt>Nilai booking</dt>
+                  <dd>{formatCurrency(nextBooking.totalPrice)}</dd>
+                </div>
+              </dl>
             </div>
           ) : (
-            <div className="overview-empty">
+            <div className="featured-event-empty">
               <h3>Belum ada acara mendatang.</h3>
-              <p>Booking yang aktif akan tampil di sini setelah dibuat atau dikonfirmasi.</p>
-              <Link className="button button-outline" href="/dashboard/bookings">
+              <p>Booking aktif akan muncul di sini setelah dibuat atau dikonfirmasi.</p>
+              <Link className="button button-light" href="/dashboard/bookings">
                 Buka booking
               </Link>
             </div>
           )}
         </article>
 
-        <aside className="overview-summary-panel">
-          <p className="section-label">Ringkasan</p>
-          <dl>
-            <div>
-              <dt>Booking aktif</dt>
-              <dd>{loading ? "—" : activeBookings.length}</dd>
-              <small>dari {bookings.length} booking tercatat</small>
-            </div>
-            <div>
-              <dt>Pembayaran menunggu</dt>
-              <dd>{loading ? "—" : pendingPayments.length}</dd>
-              <small>{loading ? "Memuat data" : formatCurrency(pendingValue)}</small>
-            </div>
-            <div>
-              <dt>Nilai terbayar</dt>
-              <dd className="summary-currency">{loading ? "—" : formatCurrency(paidValue)}</dd>
-              <small>pembayaran berstatus lunas</small>
-            </div>
-            <div>
-              <dt>Dokumentasi</dt>
-              <dd>{loading ? "—" : gallery.length}</dd>
-              <small>foto tersimpan</small>
-            </div>
-          </dl>
+        <aside className="attention-panel">
+          <header>
+            <p className="section-label">Perlu perhatian</p>
+            <h3>Prioritas berikutnya</h3>
+          </header>
+          <div className="attention-list">
+            {attentionItems.map((item, index) => (
+              <Link href={item.href} key={`${item.label}-${index}`}>
+                <span>{String(index + 1).padStart(2, "0")}</span>
+                <div>
+                  <small>{item.label}</small>
+                  <strong>{loading ? "—" : item.value}</strong>
+                  <p>{loading ? "Memuat data" : item.note}</p>
+                </div>
+                <ArrowUpRight size={15} aria-hidden="true" />
+              </Link>
+            ))}
+          </div>
         </aside>
       </section>
 
-      <section className="overview-secondary-grid">
-        <article className="overview-list-panel">
+      <section className="overview-ledger" aria-label="Ringkasan data">
+        <div>
+          <span>01</span>
+          <p>Booking aktif</p>
+          <strong>{loading ? "—" : activeBookings.length}</strong>
+          <small>dari {bookings.length} booking tercatat</small>
+        </div>
+        <div>
+          <span>02</span>
+          <p>Menunggu pembayaran</p>
+          <strong>{loading ? "—" : pendingPayments.length}</strong>
+          <small>{loading ? "Memuat data" : formatCurrency(pendingValue)}</small>
+        </div>
+        <div>
+          <span>03</span>
+          <p>Nilai terbayar</p>
+          <strong className="ledger-currency">
+            {loading ? "—" : formatCurrency(paidValue)}
+          </strong>
+          <small>pembayaran berstatus lunas</small>
+        </div>
+        <div>
+          <span>04</span>
+          <p>Dokumentasi</p>
+          <strong>{loading ? "—" : gallery.length}</strong>
+          <small>foto tersimpan</small>
+        </div>
+      </section>
+
+      <section className="overview-bottom-grid">
+        <article className="recent-bookings-panel">
           <header>
             <div>
               <p className="section-label">Aktivitas</p>
@@ -194,12 +266,19 @@ export default function DashboardOverview({ user }: DashboardOverviewProps) {
             <Link href="/dashboard/bookings">Lihat semua</Link>
           </header>
 
-          <div className="compact-record-list">
-            {recentBookings.map((item) => (
+          <div className="recent-booking-list">
+            {recentBookings.map((item, index) => (
               <Link href="/dashboard/bookings" key={item.id}>
+                <span className="recent-booking-index">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
                 <div>
-                  <strong>{item.groomName} &amp; {item.brideName}</strong>
-                  <span>{item.venue} · {formatDate(item.weddingDate)}</span>
+                  <strong>
+                    {item.groomName} &amp; {item.brideName}
+                  </strong>
+                  <small>
+                    {item.venue} · {formatDate(item.weddingDate)}
+                  </small>
                 </div>
                 <span className={`badge ${item.status.toLowerCase()}`}>
                   {statusLabels[item.status]}
@@ -212,30 +291,22 @@ export default function DashboardOverview({ user }: DashboardOverviewProps) {
           </div>
         </article>
 
-        <article className="workspace-links-panel">
-          <p className="section-label">Lanjutkan pekerjaan</p>
-          <h3>Akses cepat</h3>
+        <article className="workspace-next-panel">
+          <p className="section-label section-label-light">Lanjutkan pekerjaan</p>
+          <h3>Semua detail penting tetap terhubung.</h3>
+          <p>
+            Buka timeline untuk agenda, pembayaran untuk tagihan, atau percakapan untuk
+            koordinasi terbaru.
+          </p>
           <nav>
             <Link href="/dashboard/timeline">
-              <span>
-                <strong>Timeline acara</strong>
-                <small>Susun agenda persiapan dan pelaksanaan</small>
-              </span>
-              <ArrowRight size={16} aria-hidden="true" />
+              Timeline <ArrowUpRight size={15} aria-hidden="true" />
             </Link>
             <Link href="/dashboard/payments">
-              <span>
-                <strong>Pembayaran</strong>
-                <small>Periksa tagihan dan bukti transfer</small>
-              </span>
-              <ArrowRight size={16} aria-hidden="true" />
+              Pembayaran <ArrowUpRight size={15} aria-hidden="true" />
             </Link>
             <Link href="/dashboard/chat">
-              <span>
-                <strong>Percakapan</strong>
-                <small>Lanjutkan koordinasi terkait booking</small>
-              </span>
-              <ArrowRight size={16} aria-hidden="true" />
+              Percakapan <ArrowUpRight size={15} aria-hidden="true" />
             </Link>
           </nav>
         </article>

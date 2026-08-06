@@ -33,6 +33,7 @@ export interface PackageRecord {
   imageUrl: string | null;
   imagePublicId: string | null;
   isActive: boolean;
+  isFeatured?: boolean;
   createdAt: string;
   updatedAt: string;
 }

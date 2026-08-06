@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useRef, useState } from "react";
@@ -15,12 +15,6 @@ import { apiRequest } from "@/lib/api-client";
 import { firebaseAuth } from "@/lib/firebase/client";
 
 type AuthMode = "login" | "register";
-
-const benefits = [
-  "Pantau detail acara dari satu tempat",
-  "Simpan keputusan dan percakapan penting",
-  "Lihat timeline, tagihan, dan dokumentasi",
-];
 
 export default function AuthForm({ mode }: { mode: AuthMode }) {
   const router = useRouter();
@@ -93,44 +87,38 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
       <section className="auth-visual">
         <div className="auth-visual-photo" />
         <div className="auth-visual-overlay" />
+
         <Link href="/" className="auth-back-link">
-          <ArrowLeft size={16} aria-hidden="true" />
-          Beranda
+          <ArrowLeft size={15} aria-hidden="true" />
+          Kembali ke beranda
         </Link>
 
-        <div className="auth-visual-copy">
-          <p className="section-label section-label-light">Wedding workspace</p>
-          <h2>Satu tempat untuk menjaga setiap detail tetap terhubung.</h2>
-          <ol>
-            {benefits.map((benefit, index) => (
-              <li key={benefit}>
-                <span>{String(index + 1).padStart(2, "0")}</span>
-                {benefit}
-              </li>
-            ))}
-          </ol>
+        <div className="auth-visual-brand">
+          <span>WO</span>
+          <p>Wedding Organizer</p>
         </div>
+
+        <blockquote>
+          “Proses yang tenang memberi ruang untuk menikmati momen yang sebenarnya.”
+          <span>Wedding planning principle</span>
+        </blockquote>
       </section>
 
       <section className="auth-form-panel">
         <div className="auth-form-wrap">
-          <Link className="auth-wordmark" href="/">
-            Wedding Organizer
-          </Link>
+          <div className="auth-form-heading">
+            <p className="section-label">
+              {mode === "login" ? "Client workspace" : "Mulai perencanaan"}
+            </p>
+            <h1>{mode === "login" ? "Selamat datang kembali." : "Buat ruang kerja kalian."}</h1>
+            <p>
+              {mode === "login"
+                ? "Masuk untuk melanjutkan koordinasi, timeline, dan pembayaran."
+                : "Satu akun untuk menyimpan setiap keputusan dan perkembangan acara."}
+            </p>
+          </div>
 
           <form className="auth-card" onSubmit={submit}>
-            <header>
-              <p className="section-label">
-                {mode === "login" ? "Akses akun" : "Akun klien baru"}
-              </p>
-              <h1>{mode === "login" ? "Selamat datang kembali." : "Mulai rencana kalian."}</h1>
-              <p>
-                {mode === "login"
-                  ? "Masuk untuk melanjutkan pengelolaan acara."
-                  : "Buat akun untuk mulai berkonsultasi dan menyusun detail acara."}
-              </p>
-            </header>
-
             {mode === "register" && (
               <div className="auth-field-grid">
                 <label>
@@ -181,31 +169,34 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
             )}
 
             <button className="button button-dark button-large button-full" disabled={busy}>
-              {busy ? "Memproses..." : mode === "login" ? "Masuk" : "Buat akun"}
-              {!busy && <ArrowRight size={17} aria-hidden="true" />}
+              {busy ? "Memproses..." : mode === "login" ? "Masuk ke workspace" : "Buat akun"}
+              {!busy && <ArrowUpRight size={17} aria-hidden="true" />}
             </button>
 
-            {mode === "login" && (
-              <button type="button" className="auth-reset" onClick={resetPassword}>
-                Lupa kata sandi?
-              </button>
-            )}
-
-            <p className="auth-switch">
-              {mode === "login" ? (
-                <>
-                  Belum memiliki akun? <Link href="/register">Daftar</Link>
-                </>
-              ) : (
-                <>
-                  Sudah memiliki akun? <Link href="/login">Masuk</Link>
-                </>
+            <div className="auth-form-links">
+              {mode === "login" && (
+                <button type="button" className="auth-reset" onClick={resetPassword}>
+                  Lupa kata sandi?
+                </button>
               )}
-            </p>
+
+              <p className="auth-switch">
+                {mode === "login" ? (
+                  <>
+                    Belum memiliki akun? <Link href="/register">Daftar</Link>
+                  </>
+                ) : (
+                  <>
+                    Sudah memiliki akun? <Link href="/login">Masuk</Link>
+                  </>
+                )}
+              </p>
+            </div>
           </form>
 
           <p className="auth-privacy-note">
-            Data acara hanya dapat diakses oleh Anda dan tim organizer yang berwenang.
+            Informasi acara hanya dapat diakses oleh akun terkait dan tim organizer yang
+            berwenang.
           </p>
         </div>
       </section>

@@ -3,15 +3,15 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "Wedding Organizer",
+    default: "Wedding Organizer — We Plan, You Celebrate",
     template: "%s | Wedding Organizer",
   },
   description:
-    "Perencanaan, booking, pembayaran, timeline, dan koordinasi wedding organizer dalam satu ruang kerja.",
+    "Perencanaan, styling, dan koordinasi pernikahan yang personal, elegan, dan tertata dari awal hingga hari perayaan.",
 };
 
 export const viewport: Viewport = {
-  themeColor: "#17271f",
+  themeColor: "#5b3039",
   colorScheme: "light",
   width: "device-width",
   initialScale: 1,

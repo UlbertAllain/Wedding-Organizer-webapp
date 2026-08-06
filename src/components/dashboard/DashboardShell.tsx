@@ -3,20 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import {
-  CalendarDays,
-  Clock3,
-  CreditCard,
-  Images,
-  LayoutGrid,
-  Menu,
-  MessageSquare,
-  Package,
-  Store,
-  UserRound,
-  X,
-  type LucideIcon,
-} from "lucide-react";
+import { Menu, X } from "lucide-react";
 
 import LogoutButton from "@/components/dashboard/LogoutButton";
 import type { UserProfile } from "@/types/domain";
@@ -29,13 +16,13 @@ interface DashboardShellProps {
 interface NavigationItem {
   href: string;
   label: string;
-  icon: LucideIcon;
+  index: string;
 }
 
 const pageTitles: Record<string, { title: string; note: string }> = {
   "/dashboard": {
     title: "Ringkasan",
-    note: "Prioritas, acara, dan aktivitas terbaru.",
+    note: "Prioritas dan perkembangan acara hari ini.",
   },
   "/dashboard/bookings": {
     title: "Booking",
@@ -43,15 +30,15 @@ const pageTitles: Record<string, { title: string; note: string }> = {
   },
   "/dashboard/timeline": {
     title: "Timeline",
-    note: "Agenda persiapan dan pelaksanaan per acara.",
+    note: "Agenda persiapan dan pelaksanaan setiap acara.",
   },
   "/dashboard/packages": {
     title: "Paket",
-    note: "Kelola cakupan layanan yang ditawarkan.",
+    note: "Cakupan layanan yang ditawarkan kepada klien.",
   },
   "/dashboard/vendors": {
     title: "Vendor",
-    note: "Daftar partner dan biaya layanan.",
+    note: "Partner, kategori, dan biaya layanan.",
   },
   "/dashboard/payments": {
     title: "Pembayaran",
@@ -72,17 +59,17 @@ const pageTitles: Record<string, { title: string; note: string }> = {
 };
 
 const primaryLinks: NavigationItem[] = [
-  { href: "/dashboard", label: "Ringkasan", icon: LayoutGrid },
-  { href: "/dashboard/bookings", label: "Booking", icon: CalendarDays },
-  { href: "/dashboard/timeline", label: "Timeline", icon: Clock3 },
-  { href: "/dashboard/payments", label: "Pembayaran", icon: CreditCard },
-  { href: "/dashboard/gallery", label: "Galeri", icon: Images },
-  { href: "/dashboard/chat", label: "Percakapan", icon: MessageSquare },
+  { href: "/dashboard", label: "Ringkasan", index: "01" },
+  { href: "/dashboard/bookings", label: "Booking", index: "02" },
+  { href: "/dashboard/timeline", label: "Timeline", index: "03" },
+  { href: "/dashboard/payments", label: "Pembayaran", index: "04" },
+  { href: "/dashboard/gallery", label: "Galeri", index: "05" },
+  { href: "/dashboard/chat", label: "Percakapan", index: "06" },
 ];
 
 const adminLinks: NavigationItem[] = [
-  { href: "/dashboard/packages", label: "Paket", icon: Package },
-  { href: "/dashboard/vendors", label: "Vendor", icon: Store },
+  { href: "/dashboard/packages", label: "Paket", index: "07" },
+  { href: "/dashboard/vendors", label: "Vendor", index: "08" },
 ];
 
 export default function DashboardShell({ user, children }: DashboardShellProps) {
@@ -103,7 +90,7 @@ export default function DashboardShell({ user, children }: DashboardShellProps) 
     note: "Kelola operasional acara.",
   };
 
-  function renderLink({ href, label, icon: Icon }: NavigationItem) {
+  function renderLink({ href, label, index }: NavigationItem) {
     const active = href === "/dashboard" ? pathname === href : pathname.startsWith(href);
 
     return (
@@ -114,11 +101,18 @@ export default function DashboardShell({ user, children }: DashboardShellProps) 
         aria-current={active ? "page" : undefined}
         onClick={() => setMobileOpen(false)}
       >
-        <Icon size={17} strokeWidth={1.8} aria-hidden="true" />
+        <span className="dashboard-nav-index">{index}</span>
         <span>{label}</span>
       </Link>
     );
   }
+
+  const initials = user.name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("");
 
   return (
     <div className="dashboard-shell">
@@ -134,8 +128,11 @@ export default function DashboardShell({ user, children }: DashboardShellProps) 
       <aside className={`dashboard-sidebar${mobileOpen ? " mobile-open" : ""}`}>
         <div className="dashboard-sidebar-head">
           <Link href="/" className="dashboard-wordmark" onClick={() => setMobileOpen(false)}>
-            <strong>Wedding</strong>
-            <span>Organizer</span>
+            <span className="dashboard-monogram">WO</span>
+            <span className="dashboard-wordmark-copy">
+              <strong>Wedding Organizer</strong>
+              <small>Planning workspace</small>
+            </span>
           </Link>
           <button
             className="dashboard-sidebar-close"
@@ -159,15 +156,18 @@ export default function DashboardShell({ user, children }: DashboardShellProps) 
           </div>
         )}
 
+        <div className="dashboard-sidebar-note">
+          <span>Workspace principle</span>
+          <p>Setiap keputusan penting tersimpan dalam satu alur yang dapat ditelusuri.</p>
+        </div>
+
         <div className="dashboard-sidebar-account">
           <Link href="/dashboard/profile" className="dashboard-account-link">
             {user.avatarUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={user.avatarUrl} alt={user.name} />
             ) : (
-              <span className="dashboard-account-avatar">
-                {user.name.slice(0, 1).toUpperCase()}
-              </span>
+              <span className="dashboard-account-avatar">{initials || "WO"}</span>
             )}
             <span>
               <strong>{user.name}</strong>
@@ -187,9 +187,10 @@ export default function DashboardShell({ user, children }: DashboardShellProps) 
               aria-label="Buka navigasi"
               onClick={() => setMobileOpen(true)}
             >
-              <Menu size={20} />
+              <Menu size={19} />
             </button>
             <div>
+              <span>Wedding workspace</span>
               <h1>{currentPage.title}</h1>
               <p>{currentPage.note}</p>
             </div>
@@ -198,7 +199,7 @@ export default function DashboardShell({ user, children }: DashboardShellProps) 
           <div className="dashboard-topbar-meta">
             <span>{dateLabel}</span>
             <Link href="/dashboard/profile" aria-label="Buka profil">
-              <UserRound size={18} aria-hidden="true" />
+              {initials || "WO"}
             </Link>
           </div>
         </header>
