@@ -1,67 +1,113 @@
-# Wedding Organizer — Firestore Refactor
+# Wedding Organizer
 
-Refactor bersih untuk sistem Wedding Organizer berbasis Next.js App Router, Firebase Authentication, Firestore, Cloudinary, dan Midtrans opsional.
+Wedding Organizer adalah sistem operasional wedding organizer berbasis web untuk mengelola paket, vendor, booking, timeline acara, pembayaran, galeri, chat, dan profil pengguna.
 
-## Tujuan arsitektur
+Arsitektur berfokus pada server-authoritative data access: browser hanya menggunakan Firebase Authentication, sementara seluruh business data diproses melalui Next.js API + Firebase Admin SDK.
 
-- Satu dashboard berbasis role, tanpa duplikasi pohon halaman admin dan user.
-- Firebase Authentication untuk identitas; session cookie HttpOnly untuk autentikasi server.
-- Firestore sebagai sumber data tunggal.
-- Cloudinary signed upload untuk seluruh gambar.
-- Route handler tipis: validasi → otorisasi → repository/service → respons.
-- Booking capacity menggunakan transaksi Firestore agar aman dari race condition.
-- Midtrans webhook diverifikasi dengan SHA-512 dan `timingSafeEqual`.
-- Tidak ada akses Firestore langsung dari browser; semua data bisnis melalui API server.
+## Fitur Utama
 
-## Stack
+- Authentication dan role `ADMIN` / `USER`.
+- Paket wedding dan vendor.
+- Booking dengan daily capacity.
+- Timeline acara per booking.
+- Pembayaran Midtrans atau bukti transfer manual.
+- Gallery umum dan per-booking.
+- Chat per-booking.
+- Profil pengguna.
+- Cloudinary signed upload.
 
-- Next.js 16 + React 19 + TypeScript strict
-- Firebase Auth + Firestore Admin SDK
+## Tech Stack
+
+- Next.js 16 App Router
+- React 19 + TypeScript
+- Firebase Authentication
+- Cloud Firestore melalui Firebase Admin SDK
 - Cloudinary
-- Midtrans Snap (opsional)
+- Midtrans Snap opsional
 - Zod
 - ESLint + GitHub Actions
 
-## Modul
+## Architecture
 
-- Autentikasi dan role `ADMIN` / `USER`
-- Paket
-- Vendor
-- Booking dan kuota harian
-- Timeline acara per booking
-- Pembayaran Midtrans atau bukti transfer manual
-- Galeri umum / per-booking
-- Chat per-booking
-- Profil pengguna
+```text
+Browser
+├─ Firebase Authentication
+└─ Next.js API
+   ├─ same-origin mutation guard
+   ├─ verified HttpOnly session
+   ├─ role/resource authorization
+   ├─ Zod validation
+   ├─ feature repository / state machine
+   └─ Firebase Admin / external provider
+```
 
-## Mulai cepat
+Browser tidak memiliki direct access ke Firestore business collections. Firestore Rules menggunakan deny-all untuk client read/write.
+
+Detail:
+- [ARCHITECTURE.md](ARCHITECTURE.md)
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+- [ENGINEERING_STANDARD.md](ENGINEERING_STANDARD.md)
+- [AGENTS.md](AGENTS.md)
+
+## Security Highlights
+
+- Session cookie HttpOnly.
+- Role authoritative dibaca dari server profile.
+- Booking price dihitung server.
+- Booking capacity diputuskan transactionally.
+- Payment status tidak berasal dari free-form browser mutation.
+- Midtrans webhook diverifikasi server-side.
+- Cloudinary signed upload memakai secret server-only.
+- Media URL/public ID divalidasi sebelum disimpan.
+- Mutation berbasis session menggunakan same-origin guard.
+
+## Project Structure
+
+```text
+src/
+├── app/
+│   └── api/
+├── components/
+├── features/
+├── lib/
+│   ├── auth/
+│   ├── cloudinary/
+│   └── firebase/
+├── styles/
+└── types/
+
+docs/
+scripts/
+migration/
+```
+
+## Local Setup
+
+Gunakan Node.js 22 agar konsisten dengan CI.
 
 ```bash
 cp .env.example .env.local
-npm install
+npm ci
 npm run dev
 ```
 
-Baca dokumen berikut sebelum menjalankan produksi:
+Dokumentasi setup:
+- [SETUP.md](SETUP.md)
+- [MIGRATION_FIRESTORE.md](MIGRATION_FIRESTORE.md)
 
-- [`SETUP.md`](SETUP.md)
-- [`AUDIT_REPORT.md`](AUDIT_REPORT.md)
-- [`MIGRATION_FIRESTORE.md`](MIGRATION_FIRESTORE.md)
-- [`GITHUB_PUSH.md`](GITHUB_PUSH.md)
-- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
-- [`docs/VALIDATION.md`](docs/VALIDATION.md)
+## Environment
 
-## Quality gate
+Gunakan `.env.example` sebagai kontrak konfigurasi. Jangan commit `.env.local`, service-account JSON, private key, migration export, backup database, atau bukti pembayaran pengguna.
+
+## Quality Gate
 
 ```bash
-npm run typecheck
-npm run lint
-npm run build
-# atau semuanya:
 npm run check
 ```
 
-## Perintah operasional
+Gate repository menjalankan TypeScript, ESLint, dan Next.js production build. GitHub Actions menambahkan deterministic `npm ci`, dependency audit report, dan blocking high/critical vulnerability threshold.
+
+## Operational Commands
 
 ```bash
 npm run seed
@@ -70,10 +116,17 @@ npm run migrate:media -- migration/legacy-export.json /path/to/old/public
 npm run migrate:legacy -- migration/legacy-export-cloudinary.json
 ```
 
-> Jangan commit `.env.local`, service-account JSON, private key, atau kredensial Midtrans/Cloudinary.
+Seed/migration hanya dijalankan pada environment yang memang membutuhkan bootstrap atau migrasi.
 
+## Documentation
 
-## Antarmuka
+- [AUDIT_REPORT.md](AUDIT_REPORT.md)
+- [SETUP.md](SETUP.md)
+- [MIGRATION_FIRESTORE.md](MIGRATION_FIRESTORE.md)
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+- [docs/VALIDATION.md](docs/VALIDATION.md)
+- [docs/UI_REDESIGN.md](docs/UI_REDESIGN.md)
 
-Versi ini menggunakan editorial wedding design system untuk landing, autentikasi,
-dan dashboard. Detail perubahan UI terdapat di [`docs/UI_REDESIGN.md`](docs/UI_REDESIGN.md).
+## Engineering Rule
+
+Perubahan pada booking capacity, payment, Midtrans webhook, Cloudinary upload, authentication/session, booking ownership, atau role authorization wajib mempertahankan server-side validation dan authorization. Jangan mengembalikan direct Firestore access ke browser.
